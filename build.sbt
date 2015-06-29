@@ -1,6 +1,6 @@
-name := "Orientdb-scala-livequery"
+name := "orientdb-scala-stream"
 
-organization := "wat"
+organization := "com.marekkadek"
 
 version := "0.1"
 
@@ -11,6 +11,7 @@ val orientDBVersion = "2.1-rc4"
 libraryDependencies ++= Seq(
   "org.scalatest" %% "scalatest" % "2.2.4",
   "com.typesafe.akka" % "akka-stream-experimental_2.11" % "1.0-RC4",
+  "com.typesafe.akka" % "akka-stream-testkit-experimental_2.11" % "1.0-RC4",
   "com.orientechnologies" % "orientdb-core" % orientDBVersion withSources(),
   "com.orientechnologies" % "orientdb-graphdb" % orientDBVersion withSources(),
   "com.orientechnologies" % "orientdb-client" % orientDBVersion withSources(),
@@ -18,3 +19,11 @@ libraryDependencies ++= Seq(
   "ch.qos.logback" % "logback-classic" % "1.1.3" % Compile withSources()
 )
  
+scalacOptions ++= Seq(
+"-Xlint",
+// "-Xfatal-warnings",
+// "-feature"
+ "-deprecation"
+//"-Xlog-implicits"
+//"-Ydebug"
+)
