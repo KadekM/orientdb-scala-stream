@@ -12,6 +12,10 @@ import orientdb.streams.LiveQuery
 
 import scala.reflect.ClassTag
 
+////////////////////////////////////////////////////////
+/* todo: work in progress, design will be greatly changed */
+////////////////////////////////////////////////////////
+
 trait CancellablePublisher[A] extends Publisher[A] {
   val token: Int
   def cancel()(implicit db: ODatabaseDocumentTx): Unit
