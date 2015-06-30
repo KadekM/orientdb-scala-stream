@@ -6,13 +6,13 @@ import com.orientechnologies.orient.core.command.OCommandResultListener
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.sql.query.OSQLNonBlockingQuery
 import org.reactivestreams.Publisher
-import orientdb.streams.AsyncQuery
+import orientdb.streams.NonBlockingQuery
 import orientdb.streams.impl.ActorSource.{ Enqueue, Complete }
 
-private[streams] class AsyncQueryImpl[A](query: String,
+private[streams] class NonBlockingQueryImpl[A](query: String,
     limit: Int,
     fetchPlan: String,
-    arguments: scala.collection.immutable.Map[Object, Object])(implicit system: ActorSystem) extends AsyncQuery[A] {
+    arguments: scala.collection.immutable.Map[Object, Object])(implicit system: ActorSystem) extends NonBlockingQuery[A] {
 
   import collection.JavaConverters._
   def execute(args: Object*)(implicit db: ODatabaseDocumentTx): Publisher[A] = {
@@ -38,7 +38,7 @@ private[streams] class AsyncQueryImpl[A](query: String,
   }
 }
 
-private[streams] abstract class AsyncQueryImpl2[A]()(implicit system: ActorSystem) extends AsyncQuery[A] {
+private[streams] abstract class NonBlockingQueryImpl2[A]()(implicit system: ActorSystem) extends NonBlockingQuery[A] {
   // ask from db only what you need
   /*
   override def execute(args: Object*)(implicit db: ODatabaseDocumentTx): Publisher[A] = {

@@ -18,7 +18,7 @@ import akka.testkit._
 
 import scala.reflect.ClassTag
 
-class AsyncQueryTest(_system: ActorSystem) extends TestKit(_system)
+class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
     with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   def this() = this(ActorSystem("test"))
@@ -41,7 +41,7 @@ class AsyncQueryTest(_system: ActorSystem) extends TestKit(_system)
   "AsyncQuery" should {
 
     "fetch correct elements and emit onComplete" in {
-      val query = AsyncQuery[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
+      val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
 
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
@@ -54,7 +54,7 @@ class AsyncQueryTest(_system: ActorSystem) extends TestKit(_system)
     }
 
     "complete instantly for empty collection" in {
-      val query = AsyncQuery[ODocument]("SELECT * FROM Person WHERE name='foobar'")
+      val query = NonBlockingQuery[ODocument]("SELECT * FROM Person WHERE name='foobar'")
 
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
@@ -64,7 +64,7 @@ class AsyncQueryTest(_system: ActorSystem) extends TestKit(_system)
     }
 
     "emit error when query fails" ignore { // TODO
-      val query = AsyncQuery[ODocument]("SELC * FROM Person")
+      val query = NonBlockingQuery[ODocument]("SELC * FROM Person")
 
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
