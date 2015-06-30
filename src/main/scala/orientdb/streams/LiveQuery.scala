@@ -6,11 +6,13 @@ import com.orientechnologies.orient.core.sql.query.OSQLNonBlockingQuery
 import org.reactivestreams.Publisher
 import orientdb.streams.impl._
 
+import scala.reflect.ClassTag
+
 trait LiveQuery[A] {
-  def execute(args: Object*)(implicit db: ODatabaseDocumentTx): Publisher[A]
+  def execute(args: Any*)(implicit db: ODatabaseDocumentTx): Publisher[A]
 }
 
 object LiveQuery {
-  def apply[A](query: String)(implicit system: ActorSystem): LiveQuery[A] =
+  def apply[A: ClassTag](query: String)(implicit system: ActorSystem): LiveQuery[A] =
     new LiveQueryImpl[A](query)
 }

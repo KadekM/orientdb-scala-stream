@@ -10,6 +10,8 @@ import com.orientechnologies.orient.core.sql.query.{OLiveQuery, OLiveResultListe
 import org.reactivestreams.{Subscriber, Publisher}
 import orientdb.streams.LiveQuery
 
+import scala.reflect.ClassTag
+
 trait CancellablePublisher[A] extends Publisher[A] {
   val token: Int
   def cancel()(implicit db: ODatabaseDocumentTx): Unit
@@ -27,13 +29,13 @@ class CancellablePublisherImpl[A](publisher: Publisher[A], val token: Int) exten
   override def subscribe(s: Subscriber[_ >: A]): Unit = publisher.subscribe(s)
 }
 
-private[streams] class LiveQueryImpl[A](
+private[streams] class LiveQueryImpl[A: ClassTag](
                                        query: String
                                     )(implicit system: ActorSystem) extends LiveQuery[A] {
 
-  import collection.JavaConverters._
-  def execute(args: Object*)(implicit db: ODatabaseDocumentTx): CancellablePublisher[A] = {
-    val actorRef = system.actorOf(Props(new ActorSource[Object]))
+  //todo types
+  def execute(args: Any*)(implicit db: ODatabaseDocumentTx): CancellablePublisher[A] = {
+    val actorRef = system.actorOf(Props(new ActorSource[A]))
 
     val listener = new OLiveResultListener {
       override def onLiveResult(iLiveToken: Int, iOp: ORecordOperation): Unit = {
