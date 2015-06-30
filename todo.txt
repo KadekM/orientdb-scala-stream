@@ -1,3 +1,5 @@
+// TODO error reporting in async thread, so we get OnError
+
 // TODO implicit converter from OSQL to Source
 
 // TODO deffered exection (only when there is demand)
