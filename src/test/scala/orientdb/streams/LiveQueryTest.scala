@@ -20,7 +20,7 @@ class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
   def this() = this(ActorSystem("test"))
   //implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test")
   implicit val db = new ODatabaseDocumentTx(s"memory:mylittletest")
- // db.open("admin", "admin")
+  // db.open("admin", "admin")
   db.create()
 
   override def afterAll() = {
@@ -39,8 +39,9 @@ class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
 
   implicit val materializer = ActorMaterializer()
 
+  // tests are TODO, naming and all
   "LiveQuery (TODO, not live queries do not work in RC4)" ignore {
-    "" in {
+    "playground, to be removed" in {
       val query = LiveQuery[ODocument]("LIVE SELECT FROM Person")
       Source(query.execute()).runForeach(println)
       Thread.sleep(1000)
@@ -61,7 +62,6 @@ class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
       val result: OResultSet[ODocument] = db.query(new OLiveQuery[ODocument]("live select from Test", listener))
       println(result.get(0))
 
-
       db.command(new OCommandSQL("insert into Test set name='foo', surname='bar'")).execute()
       db.commit()
 
@@ -69,6 +69,27 @@ class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
       db.commit()
 
       Thread.sleep(2000)
+    }
+
+    "inserting after live select" in {
+    }
+
+    "updating after live select" in {
+    }
+
+    "deleting after live select" in {
+    }
+
+    "closing stream stops listening to insertions" in {
+    }
+
+    "closing stream stops listening to updates" in {
+    }
+
+    "closing stream stops listening to deletes" in {
+    }
+
+    "error propagation" in {
     }
   }
 }
