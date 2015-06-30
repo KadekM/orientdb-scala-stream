@@ -6,12 +6,14 @@ import com.orientechnologies.orient.core.sql.query.OSQLNonBlockingQuery
 import org.reactivestreams.Publisher
 import orientdb.streams.impl._
 
+import scala.reflect.ClassTag
+
 trait NonBlockingQuery[A] {
-  def execute(args: Object*)(implicit db: ODatabaseDocumentTx): Publisher[A]
+  def execute(args: Any*)(implicit db: ODatabaseDocumentTx): Publisher[A]
 }
 
 object NonBlockingQuery {
-  def apply[A](query: String,
+  def apply[A: ClassTag](query: String,
                limit: Int = -1,
                fetchPlan: String = null,
                args: Map[Object, Object] = Map.empty[Object, Object])

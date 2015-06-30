@@ -9,17 +9,19 @@ import org.reactivestreams.Publisher
 import orientdb.streams.NonBlockingQuery
 import orientdb.streams.impl.ActorSource.{ Enqueue, Complete }
 
-private[streams] class NonBlockingQueryImpl[A](query: String,
+import scala.reflect.ClassTag
+
+private[streams] class NonBlockingQueryImpl[A: ClassTag](query: String,
     limit: Int,
     fetchPlan: String,
     arguments: scala.collection.immutable.Map[Object, Object])(implicit system: ActorSystem) extends NonBlockingQuery[A] {
 
   import collection.JavaConverters._
-  def execute(args: Object*)(implicit db: ODatabaseDocumentTx): Publisher[A] = {
-    val actorRef = system.actorOf(Props(new ActorSource[Object]))
+  def execute(args: Any*)(implicit db: ODatabaseDocumentTx): Publisher[A] = {
+    val actorRef = system.actorOf(Props(new ActorSource[A]))
     val listener = createListener(actorRef)
     val oQuery =
-      new OSQLNonBlockingQuery[Object](query, limit, fetchPlan, arguments.asJava, listener)
+      new OSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments.asJava, listener)
 
     db.command(oQuery).execute(args)
 
@@ -27,7 +29,7 @@ private[streams] class NonBlockingQueryImpl[A](query: String,
   }
 
   private def createListener(ref: ActorRef) = new OCommandResultListener {
-    override def result(iRecord: scala.Any): Boolean = {
+    override def result(iRecord: Any): Boolean = {
       ref ! Enqueue(iRecord)
       true // todo we always request all
     }
