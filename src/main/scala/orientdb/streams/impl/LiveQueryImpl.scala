@@ -16,18 +16,18 @@ import scala.reflect.ClassTag
 /* todo: work in progress, design will be greatly changed */
 ////////////////////////////////////////////////////////
 
-trait CancellablePublisher[A] extends Publisher[A] {
+trait CompleteablePublisher[A] extends Publisher[A] {
   val token: Int
-  def cancel()(implicit db: ODatabaseDocumentTx): Unit
+  def complete()(implicit db: ODatabaseDocumentTx): Unit
 }
 
-object CancellablePublisher {
-  def apply[A](publisher: Publisher[A], token: Int): CancellablePublisher[A] =
-    new CancellablePublisherImpl[A](publisher, token)
+object CompleteablePublisher {
+  def apply[A](publisher: Publisher[A], token: Int): CompleteablePublisher[A] =
+    new CompleteablePublisherImpl[A](publisher, token)
 }
 
-class CancellablePublisherImpl[A](publisher: Publisher[A], val token: Int) extends CancellablePublisher[A] {
-  override def cancel()(implicit db: ODatabaseDocumentTx): Unit =
+class CompleteablePublisherImpl[A](publisher: Publisher[A], val token: Int) extends CompleteablePublisher[A] {
+  override def complete()(implicit db: ODatabaseDocumentTx): Unit =
     db.command(new OCommandSQL(s"live unsubscribe $token")).execute()
 
   override def subscribe(s: Subscriber[_ >: A]): Unit = publisher.subscribe(s)
@@ -38,7 +38,7 @@ private[streams] class LiveQueryImpl[A: ClassTag](
                                     )(implicit system: ActorSystem) extends LiveQuery[A] {
 
   //todo types
-  def execute(args: Any*)(implicit db: ODatabaseDocumentTx): CancellablePublisher[A] = {
+  def execute(args: Any*)(implicit db: ODatabaseDocumentTx): CompleteablePublisher[A] = {
     val actorRef = system.actorOf(Props(new ActorSource[A]))
 
     val listener = new OLiveResultListener {
@@ -53,7 +53,7 @@ private[streams] class LiveQueryImpl[A: ClassTag](
     val token: java.lang.Integer = (q.get(0).field("token"))
     println("TOKEN FOUND", token)
 
-    CancellablePublisher(actor.ActorPublisher[A](actorRef), 1234)
+    CompleteablePublisher(actor.ActorPublisher[A](actorRef), 1234)
   }
 
 }
