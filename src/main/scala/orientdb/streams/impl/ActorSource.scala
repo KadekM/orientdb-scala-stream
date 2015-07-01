@@ -50,6 +50,10 @@ private class ActorSource[A: ClassTag] extends FSM[State, Data] with ActorPublis
         send.foreach(onNext)
         stay using Queue[A](rest)
       }
+
+    case Event(ErrorOccurred(t), _) =>
+      t.printStackTrace()
+      stay
   }
 }
 

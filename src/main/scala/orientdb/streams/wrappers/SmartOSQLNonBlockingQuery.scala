@@ -6,7 +6,7 @@ import com.orientechnologies.orient.core.command._
 import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.sql.OCommandExecutorSQLDelegate
-import com.orientechnologies.orient.core.sql.query.OSQLQuery
+import com.orientechnologies.orient.core.sql.query.{OResultSet, OSQLQuery}
 
 import scala.concurrent.{ Future, ExecutionContext }
 
@@ -47,7 +47,7 @@ private[wrappers] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec:
       case tx: ODatabaseDocumentTx ⇒
         Future {
           val db = tx.copy()
-          try superExecute(iArgs)
+          val value: OResultSet[_] = try { superExecute(iArgs) }
           finally {
             if (db != null) db.close()
           }
