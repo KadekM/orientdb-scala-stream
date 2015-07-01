@@ -8,25 +8,22 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.sql.OCommandExecutorSQLDelegate
 import com.orientechnologies.orient.core.sql.query.OSQLQuery
 
-import scala.concurrent.{Future, ExecutionContext}
+import scala.concurrent.{ Future, ExecutionContext }
 
 object SmartOSQLNonBlockingQuery {
   OCommandManager.instance().registerExecutor(classOf[SmartOSQLNonBlockingQuery[_]], classOf[OCommandExecutorSQLDelegate])
 
   import collection.JavaConverters._
-  def apply[A](query: String)(implicit ec: ExecutionContext): OSQLQuery[A]
-    = new SmartOSQLNonBlockingQuery[A](query)
+  def apply[A](query: String)(implicit ec: ExecutionContext): OSQLQuery[A] = new SmartOSQLNonBlockingQuery[A](query)
   def apply[A](query: String,
-               limit: Int,
-               fetchPlan: String,
-               arguments: Map[Object, Object],
-               listener: OCommandResultListener)
-              (implicit ec: ExecutionContext): OSQLQuery[A]
-    = new SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments.asJava, listener)
+    limit: Int,
+    fetchPlan: String,
+    arguments: Map[Object, Object],
+    listener: OCommandResultListener)(implicit ec: ExecutionContext): OSQLQuery[A] = new SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments.asJava, listener)
 }
 // This class's execute reflect OSQLNonBlockingQuery's execute, except uses Scala's Future and
 // correctly propagates problems (future fails).
-private[wrappers] class SmartOSQLNonBlockingQuery[A](private val query: String)(implicit ec: ExecutionContext)
+private[wrappers] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec: ExecutionContext)
     extends OSQLQuery[A](query) with OCommandRequestAsynch {
 
   def this(query: String,
@@ -47,15 +44,15 @@ private[wrappers] class SmartOSQLNonBlockingQuery[A](private val query: String)(
     val database = ODatabaseRecordThreadLocal.INSTANCE.get()
 
     val future = database match {
-      case tx: ODatabaseDocumentTx =>
-         Future {
-           val db = tx.copy()
-           try superExecute(iArgs)
-           finally {
-             if (db != null) db.close()
-           }
-         }
-      case _ => Future.failed(new InvalidClassException("database is not of type ODatabaseDocumentTx"))
+      case tx: ODatabaseDocumentTx ⇒
+        Future {
+          val db = tx.copy()
+          try superExecute(iArgs)
+          finally {
+            if (db != null) db.close()
+          }
+        }
+      case _ ⇒ Future.failed(new InvalidClassException("database is not of type ODatabaseDocumentTx"))
     }
 
     future.asInstanceOf[RET]
