@@ -1,6 +1,6 @@
 package orientdb.streams.impl
 
-import akka.actor.{ FSM, Actor }
+import akka.actor.FSM
 import akka.stream.actor.ActorPublisher
 import orientdb.streams.impl.ActorSource._
 
@@ -33,6 +33,10 @@ private class ActorSource[A: ClassTag] extends FSM[State, Data] with ActorPublis
         send.foreach(onNext)
         stay using Queue[A](rest)
       }
+
+    case Event(ErrorOccurred(t), _) ⇒
+      onErrorThenStop(t)
+      stay
   }
 
   when(Completed) {
@@ -56,6 +60,7 @@ private object ActorSource {
 
   sealed trait Event
   final case class Enqueue[A](x: A) extends Event
+  final case class ErrorOccurred(t: Throwable) extends Event
   case object Complete extends Event
 
   sealed trait Data

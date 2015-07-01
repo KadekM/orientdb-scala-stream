@@ -63,7 +63,7 @@ class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
       src.expectComplete()
     }
 
-    "emit error when query fails" ignore { // TODO
+    "emit error when query fails" in {
       val query = NonBlockingQuery[ODocument]("SELC * FROM Person")
 
       val src = Source(query.execute())
