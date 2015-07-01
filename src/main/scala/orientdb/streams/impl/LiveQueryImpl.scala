@@ -39,7 +39,7 @@ private[streams] class LiveQueryImpl[A: ClassTag](
 
   //todo types
   def execute(args: Any*)(implicit db: ODatabaseDocumentTx): CompleteablePublisher[A] = {
-    val actorRef = system.actorOf(Props(new ActorSource[A]))
+    val actorRef = system.actorOf(Props(new ActorSourceBuffering[A]))
 
     val listener = new OLiveResultListener {
       override def onLiveResult(iLiveToken: Int, iOp: ORecordOperation): Unit = {

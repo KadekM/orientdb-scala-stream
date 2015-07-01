@@ -1,5 +1,5 @@
 package orientdb.streams
 
-class ActorSourceTest {
+class ActorSourceBufferingTest {
 
 }

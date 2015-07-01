@@ -1,4 +1,7 @@
+// TODO same tests for NonBlcokingBuffering and locking
 // TODO backpressuring database
+// TODO cancellations and tests!
+// TODO lots of tests
 // TODO limit in impl
 // TODO more tests for non-blocking query
 // TODO deffered exection (only when there is demand)

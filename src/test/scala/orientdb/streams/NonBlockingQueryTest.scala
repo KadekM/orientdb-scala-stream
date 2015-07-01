@@ -42,7 +42,7 @@ class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
   "AsyncQuery" should {
 
     "fetch correct elements and emit onComplete" in {
-      val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
+      val query = NonBlockingQueryBuffering[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
 
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
@@ -55,7 +55,7 @@ class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
     }
 
     "complete instantly for empty collection" in {
-      val query = NonBlockingQuery[ODocument]("SELECT * FROM Person WHERE name='foobar'")
+      val query = NonBlockingQueryBuffering[ODocument]("SELECT * FROM Person WHERE name='foobar'")
 
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
@@ -65,7 +65,7 @@ class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
     }
 
     "emit error when query fails" in {
-      val query = NonBlockingQuery[ODocument]("SELC * FROM Person")
+      val query = NonBlockingQueryBuffering[ODocument]("SELC * FROM Person")
 
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])

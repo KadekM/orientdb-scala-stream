@@ -2,12 +2,14 @@ package orientdb.streams.impl
 
 import akka.actor.FSM
 import akka.stream.actor.ActorPublisher
-import orientdb.streams.impl.ActorSource._
+import orientdb.streams.ActorSource._
 
 import scala.reflect.ClassTag
 
 // todo: mechanism if it gets too big... maybe onError or something
-private class ActorSource[A: ClassTag] extends FSM[State, Data] with ActorPublisher[A] {
+
+// TODO support CANCEL
+private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] with ActorPublisher[A] {
   import akka.stream.actor.ActorPublisherMessage._
 
   startWith(Ready, Queue(List.empty[A]))
@@ -57,17 +59,4 @@ private class ActorSource[A: ClassTag] extends FSM[State, Data] with ActorPublis
   }
 }
 
-private object ActorSource {
-  sealed trait State
-  case object Ready extends State
-  case object Completed extends State
-
-  sealed trait Event
-  final case class Enqueue[A](x: A) extends Event
-  final case class ErrorOccurred(t: Throwable) extends Event
-  case object Complete extends Event
-
-  sealed trait Data
-  final case class Queue[A](xs: List[A]) extends Data
-}
 

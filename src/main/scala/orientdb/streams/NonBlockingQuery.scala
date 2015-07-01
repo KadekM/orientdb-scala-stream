@@ -12,11 +12,21 @@ trait NonBlockingQuery[A] {
   def execute(args: Any*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext): Publisher[A]
 }
 
-object NonBlockingQuery {
+object NonBlockingQueryBuffering {
   def apply[A: ClassTag](query: String,
                limit: Int = -1,
                fetchPlan: String = null,
                args: Map[Object, Object] = Map.empty[Object, Object])
               (implicit system: ActorSystem)  =
-    new NonBlockingQueryImpl[A](query, limit, fetchPlan, args)
+  new NonBlockingQueryBuffering[A](query, limit, fetchPlan, args)
+}
+
+object NonBlockingQueryLocking {
+  // Just experimental, work in progress!
+  def apply[A: ClassTag](query: String,
+               limit: Int = -1,
+               fetchPlan: String = null,
+               args: Map[Object, Object] = Map.empty[Object, Object])
+              (implicit system: ActorSystem)  =
+  new NonBlockingQueryLocking[A](query, limit, fetchPlan, args)
 }
