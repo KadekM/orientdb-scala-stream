@@ -25,9 +25,8 @@ object SmartOSQLNonBlockingQuery {
               (implicit ec: ExecutionContext): OSQLQuery[A]
     = new SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments.asJava, listener)
 }
-// This class's execute reflect OSQLNonBlockingQuery's execute, except hook the required future.
-// Execution returns Future of promise. Original OSQLNonBlockingQuery returns their implementation
-// of Java future.
+// This class's execute reflect OSQLNonBlockingQuery's execute, except uses Scala's Future and
+// correctly propagates problems (future fails).
 private class SmartOSQLNonBlockingQuery[A](private val query: String)(implicit ec: ExecutionContext)
     extends OSQLQuery[A](query) with OCommandRequestAsynch {
 
