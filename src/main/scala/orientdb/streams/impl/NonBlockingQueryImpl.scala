@@ -43,18 +43,5 @@ private[streams] class NonBlockingQueryImpl[A: ClassTag](query: String,
   }
 }
 
-private[streams] abstract class NonBlockingQueryImpl2[A]()(implicit system: ActorSystem) extends NonBlockingQuery[A] {
-  // ask from db only what you need
-  /*
-  override def execute(args: Object*)(implicit db: ODatabaseDocumentTx): Publisher[A] = {
-    val actorRef = system.actorOf(Props(new ActorSource[Object]))
-    val listener = createListener(actorRef)
-    val oQuery =
-      new OSQLNonBlockingQuery[Object](query, limit, fetchPlan, arguments.asJava, listener)
 
-    db.command(oQuery).execute(args)
-    ActorPublisher[A](actorRef)
-  }*/
-
-}
 

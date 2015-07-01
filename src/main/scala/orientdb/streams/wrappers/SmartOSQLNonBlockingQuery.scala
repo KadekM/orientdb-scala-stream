@@ -26,7 +26,7 @@ object SmartOSQLNonBlockingQuery {
 }
 // This class's execute reflect OSQLNonBlockingQuery's execute, except uses Scala's Future and
 // correctly propagates problems (future fails).
-private class SmartOSQLNonBlockingQuery[A](private val query: String)(implicit ec: ExecutionContext)
+private[wrappers] class SmartOSQLNonBlockingQuery[A](private val query: String)(implicit ec: ExecutionContext)
     extends OSQLQuery[A](query) with OCommandRequestAsynch {
 
   def this(query: String,
