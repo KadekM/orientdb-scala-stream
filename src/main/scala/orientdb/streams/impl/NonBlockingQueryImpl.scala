@@ -18,15 +18,11 @@ private[streams] class NonBlockingQueryImpl[A: ClassTag](query: String,
     fetchPlan: String,
     arguments: scala.collection.immutable.Map[Object, Object])(implicit system: ActorSystem) extends NonBlockingQuery[A] {
 
-  OCommandManager.instance().registerExecutor(classOf[SmartOSQLNonBlockingQuery[_]], classOf[OCommandExecutorSQLDelegate])
-
-  import collection.JavaConverters._
   def execute(args: Any*)(implicit db: ODatabaseDocumentTx): Publisher[A] = {
     val actorRef = system.actorOf(Props(new ActorSource[A]))
     val listener = createListener(actorRef)
 
-    val oQuery =
-      new SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments.asJava, listener)
+    val oQuery = SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments, listener)
 
     import scala.concurrent.ExecutionContext.Implicits.global
     val future: Future[Unit] = db.command(oQuery).execute(args)

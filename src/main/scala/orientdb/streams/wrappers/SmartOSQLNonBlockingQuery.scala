@@ -3,15 +3,29 @@ package orientdb.streams.wrappers
 import com.orientechnologies.orient.core.command._
 import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import com.orientechnologies.orient.core.sql.OCommandExecutorSQLDelegate
 import com.orientechnologies.orient.core.sql.query.OSQLQuery
 
 import scala.concurrent.Promise
 import scala.util.Success
 
+object SmartOSQLNonBlockingQuery {
+  OCommandManager.instance().registerExecutor(classOf[SmartOSQLNonBlockingQuery[_]], classOf[OCommandExecutorSQLDelegate])
+
+  import collection.JavaConverters._
+  def apply[A](query: String): OSQLQuery[A]
+    = new SmartOSQLNonBlockingQuery[A](query)
+  def apply[A](query: String,
+               limit: Int,
+               fetchPlan: String,
+               arguments: Map[Object, Object],
+               listener: OCommandResultListener): OSQLQuery[A]
+    = new SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments.asJava, listener)
+}
 // This class's execute reflect OSQLNonBlockingQuery's execute, except hook the required future.
 // Execution returns Future of promise. Original OSQLNonBlockingQuery returns their implementation
 // of Java future.
-class SmartOSQLNonBlockingQuery[A](private val query: String)
+private class SmartOSQLNonBlockingQuery[A](private val query: String)
     extends OSQLQuery[A](query) with OCommandRequestAsynch {
 
   def this(query: String,
