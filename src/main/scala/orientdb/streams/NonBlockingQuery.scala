@@ -6,10 +6,11 @@ import com.orientechnologies.orient.core.sql.query.OSQLNonBlockingQuery
 import org.reactivestreams.Publisher
 import orientdb.streams.impl._
 
+import scala.concurrent.ExecutionContext
 import scala.reflect.ClassTag
 
 trait NonBlockingQuery[A] {
-  def execute(args: Any*)(implicit db: ODatabaseDocumentTx): Publisher[A]
+  def execute(args: Any*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext): Publisher[A]
 }
 
 object NonBlockingQuery {
@@ -24,5 +25,3 @@ object NonBlockingQuery {
   def apply[A](cmd: OSQLNonBlockingQuery[A])(implicit system: ActorSystem): Publisher[A] =
     new AsyncQueryImpl[A](cmd.getText, cmd.getLimit, cmd.getFetchPlan, cmd.getParameter)*/
 }
-
-

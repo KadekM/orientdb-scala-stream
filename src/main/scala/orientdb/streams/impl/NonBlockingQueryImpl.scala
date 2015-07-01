@@ -10,21 +10,21 @@ import orientdb.streams.NonBlockingQuery
 import orientdb.streams.impl.ActorSource.{ErrorOccurred, Complete, Enqueue}
 import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
 
-import scala.concurrent.Future
+import scala.concurrent.{ExecutionContext, Future}
 import scala.reflect.ClassTag
 
 private[streams] class NonBlockingQueryImpl[A: ClassTag](query: String,
     limit: Int,
     fetchPlan: String,
-    arguments: scala.collection.immutable.Map[Object, Object])(implicit system: ActorSystem) extends NonBlockingQuery[A] {
+    arguments: scala.collection.immutable.Map[Object, Object])
+  extends NonBlockingQuery[A] {
 
-  def execute(args: Any*)(implicit db: ODatabaseDocumentTx): Publisher[A] = {
+  def execute(args: Any*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext): Publisher[A] = {
     val actorRef = system.actorOf(Props(new ActorSource[A]))
     val listener = createListener(actorRef)
 
     val oQuery = SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments, listener)
 
-    import scala.concurrent.ExecutionContext.Implicits.global
     val future: Future[Unit] = db.command(oQuery).execute(args)
     future.onFailure { case t: Throwable ⇒ actorRef ! ErrorOccurred(t) }
 

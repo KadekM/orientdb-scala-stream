@@ -23,6 +23,7 @@ class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
 
   def this() = this(ActorSystem("test"))
   implicit val db = new ODatabaseDocumentTx(s"memory:testdb")
+  implicit val ec = system.dispatcher
   db.create()
 
   val users = (for (i ← 0 to 20) yield {
