@@ -4,7 +4,6 @@ import akka.actor.{ ActorRef, ActorSystem, Props }
 import akka.stream.actor.ActorPublisher
 import com.orientechnologies.orient.core.command._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
-import com.orientechnologies.orient.core.sql.OCommandExecutorSQLDelegate
 import org.reactivestreams.Publisher
 import orientdb.streams.NonBlockingQuery
 import orientdb.streams.impl.ActorSource.{ErrorOccurred, Complete, Enqueue}
@@ -42,6 +41,3 @@ private[streams] class NonBlockingQueryImpl[A: ClassTag](query: String,
     }
   }
 }
-
-
-
