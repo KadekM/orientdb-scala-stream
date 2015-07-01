@@ -1,13 +1,7 @@
-// TODO error reporting in async thread, so we get OnError
-
+// TODO backpressuring database
+// TODO limit in impl
+// TODO deffered exection (only when there is demand)
+// TODO cleanup types
 // TODO implicit converter from OSQL to Source
 
-// TODO deffered exection (only when there is demand)
-
-// TODO types
-
-// TODO limit in impl
-
-// TODO live query
-
-// TODO backpressuring database
+// TODO live query (PENDING BUG IN RC4)
