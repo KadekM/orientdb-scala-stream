@@ -8,8 +8,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.sql.OCommandExecutorSQLDelegate
 import com.orientechnologies.orient.core.sql.query.OSQLQuery
 
-import scala.concurrent.{Future, ExecutionContext, Promise}
-import scala.util.Success
+import scala.concurrent.{Future, ExecutionContext}
 
 object SmartOSQLNonBlockingQuery {
   OCommandManager.instance().registerExecutor(classOf[SmartOSQLNonBlockingQuery[_]], classOf[OCommandExecutorSQLDelegate])
