@@ -1,5 +1,6 @@
 // TODO backpressuring database
 // TODO limit in impl
+// TODO more tests for non-blocking query
 // TODO deffered exection (only when there is demand)
 // TODO cleanup types
 // TODO implicit converter from OSQL to Source
