@@ -1,28 +1,23 @@
 package orientdb.streams
 
-import akka.actor.{ ActorRef, Props, ActorSystem, Actor }
-import akka.actor.Actor.Receive
+import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import akka.stream.actor.ActorPublisher
-import akka.stream.scaladsl.{ Sink, Source }
+import akka.stream.scaladsl.Source
 import akka.stream.testkit.scaladsl.TestSink
-import com.orientechnologies.orient.core.command.OCommandResultListener
+import akka.testkit._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
-import com.orientechnologies.orient.core.sql.query.OSQLNonBlockingQuery
-import com.orientechnologies.orient.server.distributed.task.OSQLCommandTask
-import org.reactivestreams.Publisher
-import org.scalatest.{ Matchers, WordSpecLike, BeforeAndAfterAll, WordSpec }
-import org.scalatest.matchers.Matcher
-import akka.testkit._
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.reflect.ClassTag
 
-class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
+abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
     with WordSpecLike with Matchers with BeforeAndAfterAll {
 
-  def this() = this(ActorSystem("test"))
-  implicit val db = new ODatabaseDocumentTx(s"memory:testdb")
+  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
+
+  val uuid = java.util.UUID.randomUUID.toString
+  implicit val db = new ODatabaseDocumentTx(s"memory:testdb$uuid")
   implicit val ec = system.dispatcher
   db.create()
 
@@ -39,10 +34,10 @@ class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
   }
   implicit val materializer = ActorMaterializer()
 
-  "AsyncQuery" should {
+  "NonBlockingQuery" should {
 
     "fetch correct elements and emit onComplete" in {
-      val query = NonBlockingQueryBuffering[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
+      val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
 
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
@@ -55,7 +50,7 @@ class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
     }
 
     "complete instantly for empty collection" in {
-      val query = NonBlockingQueryBuffering[ODocument]("SELECT * FROM Person WHERE name='foobar'")
+      val query = NonBlockingQuery[ODocument]("SELECT * FROM Person WHERE name='foobar'")
 
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
@@ -65,7 +60,7 @@ class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
     }
 
     "emit error when query fails" in {
-      val query = NonBlockingQueryBuffering[ODocument]("SELC * FROM Person")
+      val query = NonBlockingQuery[ODocument]("SELC * FROM Person")
 
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
