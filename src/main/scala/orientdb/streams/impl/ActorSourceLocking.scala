@@ -8,7 +8,6 @@ import orientdb.streams.ActorSource._
 
 import scala.reflect.ClassTag
 
-//TODO cancelation
 private[streams] class ActorSourceLocking[A: ClassTag](semaphore: Semaphore) extends ActorPublisher[A] {
   import akka.stream.actor.ActorPublisherMessage._
 

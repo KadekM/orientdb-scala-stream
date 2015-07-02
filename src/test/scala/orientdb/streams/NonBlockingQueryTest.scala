@@ -35,14 +35,12 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
   implicit val materializer = ActorMaterializer()
 
   "NonBlockingQuery" should {
-
     "fetch correct elements and emit onComplete" in {
       val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
 
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
 
-      src.request(3)
       src.requestNext(users(0))
       src.requestNext(users(1))
       src.requestNext(users(10))
@@ -55,8 +53,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
 
-      src.expectSubscription()
-      src.expectComplete()
+      src.expectSubscriptionAndComplete()
     }
 
     "emit error when query fails" in {
@@ -65,8 +62,20 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
       val src = Source(query.execute())
         .runWith(TestSink.probe[ODocument])
 
-      src.expectSubscription()
-      src.expectError()
+      src.expectSubscriptionAndError()
+    }
+
+    "be cancellable" in {
+      val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER by name")
+
+      val src = Source(query.execute())
+        .runWith(TestSink.probe[ODocument])
+      src.requestNext(users(0))
+      src.requestNext(users(1))
+      src.requestNext(users(10))
+      src.cancel()
+      src.request(3)
+      src.expectNoMsg()
     }
   }
 }

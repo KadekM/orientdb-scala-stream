@@ -33,7 +33,7 @@ private[streams] class NonBlockingQueryBuffering[A: ClassTag](query: String,
   private def createListener(ref: ActorRef) = new OCommandResultListener {
     override def result(iRecord: Any): Boolean = {
       ref ! Enqueue(iRecord)
-      true // todo we always request all
+      true
     }
 
     override def end(): Unit = {
