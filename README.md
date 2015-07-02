@@ -1,3 +1,5 @@
+## DO NOT USE THIS YET, LOTS OF STUFF IS PLAIN WRONG / IN PROGRESS ##
+
 ## Orientdb Scala Stream
 
 
