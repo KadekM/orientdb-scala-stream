@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import akka.stream.actor.ActorPublisher
 import orientdb.streams.ActorSource.{ErrorOccurred, Complete, Enqueue}
 import orientdb.streams.impl.ActorSourceLocking.RegisterListener
-import orientdb.streams.impl.ActorControlledResultListener.Release
+import orientdb.streams.impl.ActorControlledResultListener.{Finish, Release}
 
 import scala.reflect.ClassTag
 
@@ -19,8 +19,13 @@ private class ActorSourceLocking[A: ClassTag]() extends ActorPublisher[A] {
   def withListener(listenerRef: ActorRef): Receive = {
     case Request(demand)  ⇒ listenerRef ! Release
     case Enqueue(x: A)    ⇒ onNext(x)
-    case Complete         ⇒ onCompleteThenStop()
-    case ErrorOccurred(t) ⇒ onErrorThenStop(t)
+    case Complete         ⇒
+      listenerRef ! Finish
+      onCompleteThenStop()
+
+    case ErrorOccurred(t) ⇒
+      listenerRef ! Finish
+      onErrorThenStop(t)
   }
 
   def receive = {
