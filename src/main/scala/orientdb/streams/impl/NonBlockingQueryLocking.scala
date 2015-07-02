@@ -8,6 +8,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import org.reactivestreams.Publisher
 import orientdb.streams.ActorSource.ErrorOccurred
 import orientdb.streams.NonBlockingQuery
+import orientdb.streams.impl.ActorSourceLocking.RegisterListener
 import orientdb.streams.impl.ResultListenerActor.GiveMeListener
 import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
 
@@ -29,7 +30,7 @@ private[streams] class NonBlockingQueryLocking[A: ClassTag](query: String,
     val listenerRef = system.actorOf(Props(new ResultListenerActor(sourceRef)))
     def handleErrorAtSource: PartialFunction[Throwable, Unit] = { case t: Throwable ⇒ sourceRef ! ErrorOccurred(t) }
 
-    sourceRef ! listenerRef // <--- TODO race condition?
+    sourceRef ! RegisterListener(listenerRef) // <--- TODO race condition?
     val listenerFuture = (listenerRef ? GiveMeListener).mapTo[BlockingOCommandResultListener]
     listenerFuture.map { listener ⇒
       db.activateOnCurrentThread()
