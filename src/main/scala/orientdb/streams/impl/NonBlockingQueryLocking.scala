@@ -9,7 +9,7 @@ import org.reactivestreams.Publisher
 import orientdb.streams.ActorSource.ErrorOccurred
 import orientdb.streams.NonBlockingQuery
 import orientdb.streams.impl.ActorSourceLocking.RegisterListener
-import orientdb.streams.impl.ResultListenerActor.GiveMeListener
+import orientdb.streams.impl.ActorControlledResultListener.GiveMeListener
 import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
 
 import scala.concurrent.ExecutionContext
@@ -27,7 +27,7 @@ private[streams] class NonBlockingQueryLocking[A: ClassTag](query: String,
 
     implicit val timeout = Timeout(3.seconds) // TODO timeout from outside
     val sourceRef = system.actorOf(Props(new ActorSourceLocking[A]))
-    val listenerRef = system.actorOf(Props(new ResultListenerActor(sourceRef)))
+    val listenerRef = system.actorOf(Props(new ActorControlledResultListener(sourceRef)))
     def handleErrorAtSource: PartialFunction[Throwable, Unit] = { case t: Throwable ⇒ sourceRef ! ErrorOccurred(t) }
 
     sourceRef ! RegisterListener(listenerRef) // <--- TODO race condition?

@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import akka.stream.actor.ActorPublisher
 import orientdb.streams.ActorSource.{ErrorOccurred, Complete, Enqueue}
 import orientdb.streams.impl.ActorSourceLocking.RegisterListener
-import orientdb.streams.impl.ResultListenerActor.Release
+import orientdb.streams.impl.ActorControlledResultListener.Release
 
 import scala.reflect.ClassTag
 
