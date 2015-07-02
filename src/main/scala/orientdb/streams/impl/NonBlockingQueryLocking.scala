@@ -28,7 +28,7 @@ private[streams] class NonBlockingQueryLocking[A: ClassTag](query: String,
     ec: ExecutionContext): Publisher[A] = {
 
     val semaphore = new Semaphore(0)
-    val actorRef = system.actorOf(Props(new ActorSourceLocking[A](semaphore)))
+    val actorRef = system.actorOf(ActorSourceLocking.props[A](semaphore))
     val listener = new BlockingOCommandResultListener(actorRef, semaphore)
 
     val oQuery = SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments, listener)

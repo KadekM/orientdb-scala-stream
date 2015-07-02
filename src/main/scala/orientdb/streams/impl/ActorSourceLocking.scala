@@ -2,7 +2,7 @@ package orientdb.streams.impl
 
 import java.util.concurrent.Semaphore
 
-import akka.actor.Actor
+import akka.actor.{Props, Actor}
 import akka.stream.actor.ActorPublisher
 import orientdb.streams.ActorSource._
 
@@ -24,4 +24,8 @@ private[streams] class ActorSourceLocking[A: ClassTag](semaphore: Semaphore) ext
     case Complete => onCompleteThenStop()
     case ErrorOccurred(t) => onErrorThenStop(t)
   }
+}
+
+private[streams] object ActorSourceLocking {
+  def props[A: ClassTag](semaphore: Semaphore) = Props(new ActorSourceLocking[A](semaphore))
 }
