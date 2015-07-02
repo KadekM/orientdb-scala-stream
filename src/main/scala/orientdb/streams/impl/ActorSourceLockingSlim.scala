@@ -8,7 +8,7 @@ import orientdb.streams.ActorSource._
 
 import scala.reflect.ClassTag
 
-private[streams] class ActorSourceLocking[A: ClassTag](semaphore: Semaphore) extends ActorPublisher[A] {
+private[streams] class ActorSourceLockingSlim[A: ClassTag](semaphore: Semaphore) extends ActorPublisher[A] {
   import akka.stream.actor.ActorPublisherMessage._
 
   // TODO can be optimized so that
@@ -26,6 +26,6 @@ private[streams] class ActorSourceLocking[A: ClassTag](semaphore: Semaphore) ext
   }
 }
 
-private[streams] object ActorSourceLocking {
-  def props[A: ClassTag](semaphore: Semaphore) = Props(new ActorSourceLocking[A](semaphore))
+private[streams] object ActorSourceLockingSlim {
+  def props[A: ClassTag](semaphore: Semaphore) = Props(new ActorSourceLockingSlim[A](semaphore))
 }

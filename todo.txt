@@ -6,5 +6,6 @@
 // TODO deffered exection (only when there is demand)
 // TODO cleanup types
 // TODO implicit converter from OSQL to Source
+// TODO remove silly names
 
 // TODO live query (PENDING BUG IN RC4)
