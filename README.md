@@ -1,9 +1,7 @@
-## DO NOT USE THIS YET, LOTS OF STUFF IS PLAIN WRONG / IN PROGRESS ##
+## DO NOT USE THIS YET##
+_Just experiment, let's see how it goes. Pretty much everything is work in progress._
 
 ## Orientdb Scala Stream
-
-
-_Just experiment, let's see how it goes. Pretty much everything is work in progress._
 
 Library allows you to execute `non blocking queries` and `live queries` on database, and treat them as stream.
 
