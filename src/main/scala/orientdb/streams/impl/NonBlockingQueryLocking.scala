@@ -4,6 +4,7 @@ import akka.actor.{ActorSystem, _}
 import akka.pattern.ask
 import akka.stream.actor.ActorPublisher
 import akka.util.Timeout
+import com.orientechnologies.orient.core.command.OCommandResultListener
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import org.reactivestreams.Publisher
 import orientdb.streams.ActorSource.ErrorOccurred
@@ -30,15 +31,16 @@ private[streams] class NonBlockingQueryLocking[A: ClassTag](query: String,
     val listenerRef = system.actorOf(Props(new ActorControlledResultListener(sourceRef)))
     def handleErrorAtSource: PartialFunction[Throwable, Unit] = { case t: Throwable ⇒ sourceRef ! ErrorOccurred(t) }
 
-    sourceRef ! RegisterListener(listenerRef) // <--- TODO race condition?
-    val listenerFuture = (listenerRef ? GiveMeListener).mapTo[BlockingOCommandResultListener]
-    listenerFuture.map { listener ⇒
+    (for {
+      _ <- sourceRef ? RegisterListener(listenerRef)
+      listener <- (listenerRef ? GiveMeListener).mapTo[OCommandResultListener]
+    } yield {
+       //TODO: SmartOSQLNonBlockingQuery starts a new future, so we kinda have redundancy (and we need to activate db twice...)
       db.activateOnCurrentThread()
-      //TODO: SmartOSQLNonBlockingQuery starts a new future, so we kinda have redundancy (and we need to activate db twice...)
       val oQuery = SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments, listener)
       val future: scala.concurrent.Future[Unit] = db.command(oQuery).execute(args)
       future.onFailure(handleErrorAtSource)
-    }.onFailure(handleErrorAtSource)
+    }).onFailure(handleErrorAtSource)
 
     ActorPublisher[A](sourceRef)
   }
