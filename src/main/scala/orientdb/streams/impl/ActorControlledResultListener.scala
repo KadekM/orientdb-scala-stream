@@ -3,11 +3,11 @@ package orientdb.streams.impl
 import java.util.concurrent.Semaphore
 
 import akka.actor.{ Actor, ActorRef }
-import orientdb.streams.impl.ActorControlledResultListener.{Finish, GiveMeListener, Release}
+import orientdb.streams.impl.ActorControlledResultListener.{Finish, GiveMeListener, RequestAmount}
 
 private object ActorControlledResultListener {
   sealed trait Message
-  final case class Release(amount: Long) extends Message
+  final case class RequestAmount(amount: Int) extends Message
   case object GiveMeListener extends Message
   case object Finish extends Message
 }
@@ -17,8 +17,10 @@ private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
   val listener = new BlockingOCommandResultListener(sourceRef, semaphore)
 
   def receive = {
-    case Release(amount)   ⇒
-      semaphore.release(amount.toInt) // todo toInt on long
+    case RequestAmount(amount)   ⇒
+      // TODO: is there better way ?
+      semaphore.drainPermits()
+      semaphore.release(amount)
     case GiveMeListener ⇒
       sender() ! listener
     case Finish =>

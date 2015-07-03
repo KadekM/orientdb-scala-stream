@@ -57,6 +57,18 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
       src.expectComplete()
     }
 
+    "does not send more even if same request arrives once" in {
+      val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 10")
+
+      val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
+
+      src.request(5)
+      src.request(5)
+
+      for (i <- 1 to 5) src.expectNext()
+      src.expectNoMsg()
+    }
+
     "complete instantly for empty collection" in {
       val query = NonBlockingQuery[ODocument]("SELECT * FROM Person WHERE name='foobar'")
 
