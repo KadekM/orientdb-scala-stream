@@ -47,6 +47,16 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
       src.expectComplete()
     }
 
+    "fetches correct amount for single demand request" in {
+      val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 10")
+
+      val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
+
+      src.request(10)
+      for (i <- 1 to 10) src.expectNext()
+      src.expectComplete()
+    }
+
     "complete instantly for empty collection" in {
       val query = NonBlockingQuery[ODocument]("SELECT * FROM Person WHERE name='foobar'")
 

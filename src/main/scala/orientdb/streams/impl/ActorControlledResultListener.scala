@@ -7,7 +7,7 @@ import orientdb.streams.impl.ActorControlledResultListener.{Finish, GiveMeListen
 
 private object ActorControlledResultListener {
   sealed trait Message
-  case object Release extends Message
+  final case class Release(amount: Long) extends Message
   case object GiveMeListener extends Message
   case object Finish extends Message
 }
@@ -17,8 +17,10 @@ private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
   val listener = new BlockingOCommandResultListener(sourceRef, semaphore)
 
   def receive = {
-    case Release        ⇒ semaphore.release()
-    case GiveMeListener ⇒ sender() ! listener
+    case Release(amount)   ⇒
+      semaphore.release(amount.toInt) // todo toInt on long
+    case GiveMeListener ⇒
+      sender() ! listener
     case Finish =>
       listener.finishFetching()
       context.stop(self)

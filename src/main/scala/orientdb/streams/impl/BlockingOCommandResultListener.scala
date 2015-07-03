@@ -22,7 +22,7 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef, semaphor
   def finishFetching() = {
     fetchMore.set(false)
     // let all through, completion is over, just arbitrary big number used (but not big for int overflow)
-    semaphore.release(65536)
+    semaphore.release(65536) // todo check how many are there, so we dont overflow
   }
 
   def isFinished = !fetchMore.get()
