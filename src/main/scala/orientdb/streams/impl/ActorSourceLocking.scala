@@ -18,6 +18,7 @@ private class ActorSourceLocking[A: ClassTag]() extends ActorPublisher[A] {
   import akka.stream.actor.ActorPublisherMessage._
 
   def withListener(listenerRef: ActorRef): Receive = {
+     // TODO: need better! Release increases amounts, we want to set it (probably)... so remove release and forward request
     case Request(demand)  ⇒ listenerRef ! Release(demand)
     case Enqueue(x: A)    ⇒ onNext(x)
 
