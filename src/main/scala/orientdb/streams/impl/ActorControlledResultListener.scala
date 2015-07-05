@@ -18,8 +18,7 @@ private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
 
   def receive = {
     case RequestAmount(amount)   ⇒
-      // TODO: is there better way ?
-      semaphore.drainPermits()
+      // TODO: overflow
       semaphore.release(amount)
     case GiveMeListener ⇒
       sender() ! listener

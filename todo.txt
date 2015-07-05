@@ -1,16 +1,1 @@
-// TCK, verify tests
-// fix broken impl
-
-// TODO backpressuring database
-// TODO stop finished actors
-// TODO cancellation in all?
-
-// TODO access modifiers
-// TODO lots of tests
-// TODO limit in impl
-// TODO more tests for non-blocking query
-// TODO cleanup types
-// TODO implicit converter from OSQL to Source
-// TODO remove silly names
-
-// TODO live query (PENDING BUG IN RC4)
+// TCK, verify tests// fix broken impl!!!!!!!!!!!!!!!!!!!!!!!!!!! additional test is probably worng// TODO backpressuring database// TODO stop finished actors// TODO cancellation in all?// TODO access modifiers// TODO lots of tests// TODO limit in impl// TODO more tests for non-blocking query// TODO cleanup types// TODO implicit converter from OSQL to Source// TODO remove silly names// TODO live query (PENDING BUG IN RC4)
