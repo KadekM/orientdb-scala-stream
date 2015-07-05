@@ -11,7 +11,7 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka" % "akka-stream-experimental_2.11" % "1.0-RC4",
   "com.typesafe.akka" % "akka-stream-testkit-experimental_2.11" % "1.0-RC4",
   "com.orientechnologies" % "orientdb-server" % "2.1-rc4",
-  "org.reactivestreams" % "reactive-streams-tck" % "1.0.0.final",
+  "org.reactivestreams" % "reactive-streams-tck" % "1.0.0",
   "ch.qos.logback" % "logback-classic" % "1.1.3" % Compile withSources()
 )
  
