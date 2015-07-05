@@ -1,7 +1,7 @@
 package orientdb.streams.impl
 
 import java.util.concurrent.Semaphore
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.{AtomicLong, AtomicBoolean}
 
 import akka.actor.ActorRef
 import com.orientechnologies.orient.core.command.OCommandResultListener
@@ -14,7 +14,7 @@ This listener acquires semaphore before sending message to actor (thus is blocki
 Semaphore has to be released from owners of instance of this listener - to let him emit message
 and process another row.
  */
-private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef, semaphore: Semaphore) extends OCommandResultListener {
+private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef, semaphore: Semaphore, counter: AtomicLong) extends OCommandResultListener {
   // shared among two threads
   private val fetchMore = new AtomicBoolean(true)
 
@@ -22,9 +22,8 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef, semaphor
   def finishFetching() = {
     fetchMore.set(false)
 
-    // let all through, completion is over...drain permits so we don't overflow when releasing...
+    // let all through, completion is over...
     // release arbitrary big number (just for safety)
-    semaphore.drainPermits()
     semaphore.release(65536)
   }
 
@@ -32,8 +31,13 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef, semaphor
 
   // this is called by db thread
   override def result(iRecord: Any): Boolean = blocking {
-    semaphore.acquire()
+    if (counter.get() <= 1) {
+      semaphore.acquire()
+    }
+
     sourceRef ! Enqueue(iRecord)
+    counter.decrementAndGet()
+
     fetchMore.get()
   }
 
