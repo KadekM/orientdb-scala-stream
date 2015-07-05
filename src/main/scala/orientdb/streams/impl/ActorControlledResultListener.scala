@@ -20,11 +20,13 @@ private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
 
   def receive = {
     case RequestAmount(amount)   ⇒
-      // todo OVERFLOW
-      // oh god... need something better... for now it eliminates race
-      val release = Math.min(100, counter.addAndGet(amount)).toInt
-      counter.addAndGet(-release)
-      semaphore.release(release)
+      // TODO: oh god... need something better... for now it eliminates race
+      if (counter.addAndGet(amount) < 0) counter.set(Long.MaxValue) // dont overflow
+      val release = Math.min(1000, counter.get()).toInt
+      if (semaphore.availablePermits() < 100000) {
+        counter.addAndGet(-release)
+        semaphore.release(release)
+      }
 
     case GiveMeListener ⇒
       sender() ! listener
