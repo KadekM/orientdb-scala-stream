@@ -16,15 +16,16 @@ private object ActorControlledResultListener {
 private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
   val semaphore = new Semaphore(0)
   val counter = new AtomicLong(0L)
-  val listener = new BlockingOCommandResultListener(sourceRef, semaphore, counter)
+  val listener = new BlockingOCommandResultListener(sourceRef, semaphore)
 
   def receive = {
     case RequestAmount(amount)   ⇒
-      // todo overflow
-      if (counter.addAndGet(amount) > 0) {
-        semaphore.drainPermits()
-        semaphore.release()
-      }
+      // todo OVERFLOW
+      // oh god... need something better... for now it eliminates race
+      val release = Math.min(100, counter.addAndGet(amount)).toInt
+      counter.addAndGet(-release)
+      semaphore.release(release)
+
     case GiveMeListener ⇒
       sender() ! listener
     case Finish =>

@@ -14,7 +14,7 @@ This listener acquires semaphore before sending message to actor (thus is blocki
 Semaphore has to be released from owners of instance of this listener - to let him emit message
 and process another row.
  */
-private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef, semaphore: Semaphore, counter: AtomicLong) extends OCommandResultListener {
+private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef, semaphore: Semaphore) extends OCommandResultListener {
   // shared among two threads
   private val fetchMore = new AtomicBoolean(true)
 
@@ -31,12 +31,9 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef, semaphor
 
   // this is called by db thread
   override def result(iRecord: Any): Boolean = blocking {
-    if (counter.get() <= 1) {
-      semaphore.acquire()
-    }
+    semaphore.acquire()
 
     sourceRef ! Enqueue(iRecord)
-    counter.decrementAndGet()
 
     fetchMore.get()
   }
