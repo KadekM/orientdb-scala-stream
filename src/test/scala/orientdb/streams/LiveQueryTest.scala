@@ -12,7 +12,6 @@ import com.orientechnologies.orient.core.serialization.serializer.record.binary.
 import com.orientechnologies.orient.core.sql.OCommandSQL
 import com.orientechnologies.orient.core.sql.query.{ OResultSet, OLiveQuery, OLiveResultListener }
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
-import orientdb.streams.impl.CompleteablePublisher$
 
 class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
     with WordSpecLike with Matchers with BeforeAndAfterAll {
