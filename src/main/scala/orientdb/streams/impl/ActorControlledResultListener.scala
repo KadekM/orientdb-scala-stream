@@ -4,28 +4,26 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicLong
 
 import akka.actor.{ Actor, ActorRef }
-import orientdb.streams.impl.ActorControlledResultListener.{Finish, GiveMeListener, RequestAmount}
+import orientdb.streams.impl.ActorControlledResultListener.{Finish, GiveMeListener, TotalDemandUpdate}
 
 private object ActorControlledResultListener {
   sealed trait Message
-  final case class RequestAmount(amount: Long) extends Message
+  final case class TotalDemandUpdate(totalDemand: Long) extends Message
   case object GiveMeListener extends Message
   case object Finish extends Message
 }
 
 private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
-  val semaphore = new Semaphore(0)
   val counter = new AtomicLong(0L)
-  val listener = new BlockingOCommandResultListener(sourceRef, semaphore)
+  val listener = new BlockingOCommandResultListener(sourceRef, counter)
 
   def receive = {
-    case RequestAmount(amount)   ⇒
-      // TODO: oh god... need something better... for now it eliminates race
-      if (counter.addAndGet(amount) < 0) counter.set(Long.MaxValue) // dont overflow
-      val release = Math.min(1024, counter.get()).toInt
-      if (semaphore.availablePermits() < 65536) {
-        counter.addAndGet(-release)
-        semaphore.release(release)
+    case TotalDemandUpdate(totalDemand)   ⇒
+      if (totalDemand > 0) {
+        counter.synchronized {
+          counter.set(totalDemand)
+          counter.notify()
+        }
       }
 
     case GiveMeListener ⇒
