@@ -15,7 +15,7 @@ Semaphore has to be released from owners of instance of this listener - to let h
 and process another row.
  */
 private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
-                                                   totalDemand: AtomicLong) extends OCommandResultListener {
+                                                   semaphore: BigSemaphore) extends OCommandResultListener {
   // shared among two threads
   private val fetchMore = new AtomicBoolean(true)
 
@@ -25,22 +25,15 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
 
     // let all through, completion is over...
     // release arbitrary big number (just for safety)
-    totalDemand.synchronized {
-      totalDemand.set(65536)
-      totalDemand.notifyAll()
-    }
+    semaphore.drainPermits()
+    semaphore.release(65536)
   }
 
   def isFinished = !fetchMore.get()
 
   // this is called by db thread
   override def result(iRecord: Any): Boolean = blocking {
-    totalDemand.synchronized {
-      while (totalDemand.get() <= 0)
-        totalDemand.wait()
-
-      totalDemand.decrementAndGet()
-    }
+    semaphore.acquire()
 
     sourceRef ! Enqueue(iRecord)
 

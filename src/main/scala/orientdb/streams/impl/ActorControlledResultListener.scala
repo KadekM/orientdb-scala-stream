@@ -4,26 +4,23 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicLong
 
 import akka.actor.{ Actor, ActorRef }
-import orientdb.streams.impl.ActorControlledResultListener.{Finish, GiveMeListener, TotalDemandUpdate}
+import orientdb.streams.impl.ActorControlledResultListener.{Finish, GiveMeListener, RequestedDemand}
 
 private object ActorControlledResultListener {
   sealed trait Message
-  final case class TotalDemandUpdate(totalDemand: Long) extends Message
+  final case class RequestedDemand(totalDemand: Long) extends Message
   case object GiveMeListener extends Message
   case object Finish extends Message
 }
 
 private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
-  val counter = new AtomicLong(0L)
-  val listener = new BlockingOCommandResultListener(sourceRef, counter)
+  val semaphore = new BigSemaphore()
+  val listener = new BlockingOCommandResultListener(sourceRef, semaphore)
 
   def receive = {
-    case TotalDemandUpdate(totalDemand)   ⇒
-      if (totalDemand > 0) {
-        counter.synchronized {
-          counter.set(totalDemand)
-          counter.notify()
-        }
+    case RequestedDemand(demand)   ⇒
+      if (demand > 0) {
+        semaphore.release(demand)
       }
 
     case GiveMeListener ⇒
