@@ -2,7 +2,6 @@ package orientdb.streams.impl
 
 import akka.actor.FSM
 import akka.stream.actor.ActorPublisher
-import orientdb.streams.ActorSource
 import orientdb.streams.ActorSource._
 
 import scala.reflect.ClassTag
@@ -21,7 +20,7 @@ private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] w
         stay
       }
 
-    case Event(Cancel, _) =>
+    case Event(Cancel, _) ⇒
       onCompleteThenStop()
       stay
 
@@ -55,13 +54,12 @@ private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] w
         send.foreach(onNext)
         stay using Queue[A](rest)
       }
-    case Event(Cancel, _) =>
+    case Event(Cancel, _) ⇒
       onCompleteThenStop()
       stay
-    case Event(ErrorOccurred(t), _) =>
+    case Event(ErrorOccurred(t), _) ⇒
       t.printStackTrace()
       stay
   }
 }
-
 
