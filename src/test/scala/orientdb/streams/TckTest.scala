@@ -10,8 +10,10 @@ import org.scalatest.testng.TestNGSuiteLike
 
 import scala.reflect.ClassTag
 
-class TckTest extends PublisherVerification[ODocument](new TestEnvironment()) with TestNGSuiteLike with TestKitBase {
-  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
+abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironment() {
+  override def defaultTimeoutMillis(): Long = 100L
+}) with TestNGSuiteLike with TestKitBase {
+  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
 
   implicit lazy val system = ActorSystem()
   val uuid = java.util.UUID.randomUUID.toString
@@ -37,3 +39,13 @@ class TckTest extends PublisherVerification[ODocument](new TestEnvironment()) wi
     query.execute()
   }
 }
+
+class TckTestLocking extends TckTest {
+  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
+}
+/*
+// TODO: later
+class TckTestBuffering extends TckTest {
+  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
+}
+*/

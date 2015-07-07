@@ -22,7 +22,9 @@ private class ActorSourceLocking[A: ClassTag]() extends ActorPublisher[A] {
     case Enqueue(x: A)    ⇒ onNext(x)
 
     case Complete         ⇒
-      listenerRef ! Finish
+      if (isCanceled) { // if is canceled, then stop and cleanup, otherwise db is already canceled
+        listenerRef ! Finish
+      }
       onCompleteThenStop()
 
     case ErrorOccurred(t) ⇒

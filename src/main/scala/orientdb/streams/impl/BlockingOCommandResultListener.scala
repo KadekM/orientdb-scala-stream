@@ -19,7 +19,7 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
   // shared among two threads
   private val fetchMore = new AtomicBoolean(true)
 
-  // this is called by actor thread
+  // this is called by actor thread from outside of on end of db stream
   def finishFetching() = {
     fetchMore.set(false)
 
@@ -33,14 +33,18 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
 
   // this is called by db thread
   override def result(iRecord: Any): Boolean = blocking {
-    semaphore.acquire()
+    if (fetchMore.get()) {
+      semaphore.acquire()
 
-    sourceRef ! Enqueue(iRecord)
-
-    fetchMore.get()
+      sourceRef ! Enqueue(iRecord)
+      true
+    } else {
+      false
+    }
   }
 
   override def end(): Unit = {
+    finishFetching()
     sourceRef ! Complete
   }
 }
