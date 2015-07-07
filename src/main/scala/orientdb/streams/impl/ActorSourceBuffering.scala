@@ -7,9 +7,7 @@ import orientdb.streams.ActorSource._
 
 import scala.reflect.ClassTag
 
-// todo: mechanism if it gets too big... maybe onError or something
-
-// TODO support CANCEL
+// todo: mechanism if it gets too big...
 private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] with ActorPublisher[A] {
   import akka.stream.actor.ActorPublisherMessage._
 
