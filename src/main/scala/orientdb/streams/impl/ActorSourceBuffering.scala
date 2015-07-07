@@ -23,6 +23,10 @@ private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] w
         stay
       }
 
+    case Event(Cancel, _) =>
+      onCompleteThenStop()
+      stay
+
     case Event(Complete, queue: Queue[A]) ⇒
       if (queue.xs.isEmpty) onCompleteThenStop()
       goto(Completed)
@@ -53,7 +57,9 @@ private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] w
         send.foreach(onNext)
         stay using Queue[A](rest)
       }
-    case Event(Cancel, _) => stay
+    case Event(Cancel, _) =>
+      onCompleteThenStop()
+      stay
     case Event(ErrorOccurred(t), _) =>
       t.printStackTrace()
       stay
