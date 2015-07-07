@@ -4,7 +4,7 @@ import akka.actor.ActorRef
 import akka.stream.actor.ActorPublisher
 import orientdb.streams.ActorSource.{ErrorOccurred, Complete, Enqueue}
 import orientdb.streams.impl.ActorSourceLocking.{FinishedRegisteringListener, RegisterListener}
-import orientdb.streams.impl.ActorControlledResultListener.{Finish, RequestedDemand}
+import orientdb.streams.impl.ActorControlledResultListener.{Stop, RequestedDemand}
 
 import scala.reflect.ClassTag
 
@@ -21,14 +21,18 @@ private class ActorSourceLocking[A: ClassTag]() extends ActorPublisher[A] {
     case Request(demand)  ⇒ listenerRef ! RequestedDemand(demand)
     case Enqueue(x: A)    ⇒ onNext(x)
 
+      // Complete may come in 2 ways:
+      // - from BlockingOCommandResultListener, when the db stream is exhausted
+      // - from downstream, when it is canceled.
+      // If it's canceled, we want to tell DB to stop processing. Otherwise just stop.
     case Complete         ⇒
-      if (isCanceled) { // if is canceled, then stop and cleanup, otherwise db is already canceled
-        listenerRef ! Finish
+      if (isCanceled) {
+        listenerRef ! Stop
       }
       onCompleteThenStop()
 
     case ErrorOccurred(t) ⇒
-      listenerRef ! Finish
+      listenerRef ! Stop
       onErrorThenStop(t)
   }
 

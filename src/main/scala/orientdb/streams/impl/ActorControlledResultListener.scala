@@ -4,13 +4,13 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicLong
 
 import akka.actor.{ Actor, ActorRef }
-import orientdb.streams.impl.ActorControlledResultListener.{Finish, GiveMeListener, RequestedDemand}
+import orientdb.streams.impl.ActorControlledResultListener.{Stop, GiveMeListener, RequestedDemand}
 
 private object ActorControlledResultListener {
   sealed trait Message
   final case class RequestedDemand(totalDemand: Long) extends Message
   case object GiveMeListener extends Message
-  case object Finish extends Message
+  case object Stop extends Message
 }
 
 private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
@@ -28,7 +28,7 @@ private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
 
     case GiveMeListener ⇒
       sender() ! listener
-    case Finish =>
+    case Stop =>
       listener.finishFetching()
       context.stop(self)
   }
