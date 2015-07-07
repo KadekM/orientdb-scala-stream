@@ -11,7 +11,7 @@ import org.scalatest.testng.TestNGSuiteLike
 import scala.reflect.ClassTag
 
 abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironment() {
-  override def defaultTimeoutMillis(): Long = 100L
+  override def defaultTimeoutMillis(): Long = 200L
 }) with TestNGSuiteLike with TestKitBase {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
 
@@ -43,9 +43,8 @@ abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironm
 class TckTestLocking extends TckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
 }
-/*
-// TODO: later
+
 class TckTestBuffering extends TckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
 }
-*/
+

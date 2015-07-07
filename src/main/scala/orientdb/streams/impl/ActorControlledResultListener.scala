@@ -14,13 +14,16 @@ private object ActorControlledResultListener {
 }
 
 private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
-  val semaphore = new BigSemaphore()
-  val listener = new BlockingOCommandResultListener(sourceRef, semaphore)
+  val signals = new AtomicLong(0L)
+  val listener = new BlockingOCommandResultListener(sourceRef, signals)
 
   def receive = {
     case RequestedDemand(demand)   ⇒
       if (demand > 0) {
-        semaphore.release(demand)
+        signals.synchronized {
+          signals.addAndGet(demand)
+          signals.notify()
+        }
       }
 
     case GiveMeListener ⇒
