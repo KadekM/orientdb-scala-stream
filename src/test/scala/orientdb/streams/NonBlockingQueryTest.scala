@@ -7,8 +7,6 @@ import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
-import org.reactivestreams.Publisher
-import org.reactivestreams.tck.PublisherVerification
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 
 import scala.reflect.ClassTag

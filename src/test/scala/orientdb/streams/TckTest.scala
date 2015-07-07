@@ -48,3 +48,4 @@ class TckTestBuffering extends TckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
 }
 
+
