@@ -5,8 +5,12 @@ import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
 import akka.actor.ActorRef
 import com.orientechnologies.orient.core.command.OCommandResultListener
+import com.orientechnologies.orient.core.db.record.ORecordElement
+import com.orientechnologies.orient.core.record.impl.ODocument
 import scala.concurrent.blocking
 import orientdb.streams.ActorSource.{ Complete, Enqueue }
+
+import scala.util.Try
 
 /*
  * OCommandResultListener that talks to ActorPublisher. The Actor handle ActorSource messages(events).
@@ -32,6 +36,7 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
   }
 
   def isFinished = !fetchMore.get()
+  var wasDemand = false
 
   // this is called by db thread
   override def result(iRecord: Any): Boolean = blocking {
@@ -41,14 +46,17 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
           signals.wait()
 
         signals.decrementAndGet()
-        sourceRef ! Enqueue(iRecord)
+        //todo
+       val x: ODocument = iRecord.asInstanceOf[ODocument]
+        val z = x.toString() // ENFORCE FETCH TODO FOR NOW
+        sourceRef ! Enqueue(x)
       }
       true
     } else false
   }
 
   override def end(): Unit = {
-    fetchMore.set(false)
-    sourceRef ! Complete
+      fetchMore.set(false)
+      sourceRef ! Complete
   }
 }

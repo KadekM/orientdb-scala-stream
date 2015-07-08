@@ -2,6 +2,7 @@ package orientdb.streams.wrappers
 
 import java.io.InvalidClassException
 
+import com.orientechnologies.orient.client.remote.OStorageRemoteThread
 import com.orientechnologies.orient.core.command._
 import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
@@ -14,7 +15,6 @@ object SmartOSQLNonBlockingQuery {
   OCommandManager.instance().registerExecutor(classOf[SmartOSQLNonBlockingQuery[_]], classOf[OCommandExecutorSQLDelegate])
 
   import collection.JavaConverters._
-  def apply[A](query: String)(implicit ec: ExecutionContext): OSQLQuery[A] = new SmartOSQLNonBlockingQuery[A](query)
   def apply[A](query: String,
     limit: Int,
     fetchPlan: String,
@@ -41,16 +41,24 @@ private[wrappers] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec:
   override def isAsynchronous: Boolean = true
 
   override def execute[RET](iArgs: AnyRef*): RET = {
-    val database = ODatabaseRecordThreadLocal.INSTANCE.get()
 
+    val database = ODatabaseRecordThreadLocal.INSTANCE.get()
     val future = database match {
       case tx: ODatabaseDocumentTx ⇒
         Future {
+          //println("!!!!!!!!!!!!!!!!!!!!", tx.getStorage.asInstanceOf[OStorageRemoteThread])
           val db = tx.copy()
-          val value: OResultSet[_] = try { superEx() }
-          finally {
-            if (db != null) db.close()
-          }
+          //val value: OResultSet[_] = try { superEx() }
+          val value: OResultSet[_] = superEx()
+          /*catch{
+            case e =>
+              println("--------------------")
+              e.printStackTrace()
+              throw e
+          }*/
+        /*  finally {
+          //  if (db != null) db.close() // TODOOOOOOOOOOOOOOO
+          }*/
         }
       case _ ⇒ Future.failed(new InvalidClassException("database is not of type ODatabaseDocumentTx"))
     }

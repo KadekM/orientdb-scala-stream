@@ -2,6 +2,7 @@ package orientdb.streams.impl
 
 import akka.actor.ActorRef
 import akka.stream.actor.ActorPublisher
+import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
 import orientdb.streams.ActorSource.{ErrorOccurred, Complete, Enqueue}
 import orientdb.streams.impl.ActorSourceLocking.{FinishedRegisteringListener, RegisterListener}
 import orientdb.streams.impl.ActorControlledResultListener.{Stop, RequestedDemand}
@@ -19,20 +20,24 @@ private class ActorSourceLocking[A: ClassTag]() extends ActorPublisher[A] {
 
   def withListener(listenerRef: ActorRef): Receive = {
     case Request(demand)  ⇒ listenerRef ! RequestedDemand(demand)
-    case Enqueue(x: A)    ⇒ onNext(x)
+    case Enqueue(x: A)    ⇒
+      onNext(x)
 
       // Complete may come in 2 ways:
       // - from BlockingOCommandResultListener, when the db stream is exhausted
       // - from downstream, when it is canceled.
       // If it's canceled, we want to tell DB to stop processing. Otherwise just stop.
     case Complete         ⇒
+      //println("COMPLETE")
       if (isCanceled) {
         listenerRef ! Stop
       }
+
       onCompleteThenStop()
 
     case ErrorOccurred(t) ⇒
       listenerRef ! Stop
+      t.printStackTrace()
       onErrorThenStop(t)
   }
 

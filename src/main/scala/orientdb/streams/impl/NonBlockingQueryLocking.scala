@@ -13,7 +13,7 @@ import orientdb.streams.impl.ActorSourceLocking.RegisterListener
 import orientdb.streams.impl.ActorControlledResultListener.GiveMeListener
 import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
 
-import scala.concurrent.ExecutionContext
+import scala.concurrent.{Future, ExecutionContext}
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
@@ -38,7 +38,7 @@ private[streams] class NonBlockingQueryLocking[A: ClassTag](query: String,
        //TODO: SmartOSQLNonBlockingQuery starts a new future, so we kinda have redundancy (and we need to activate db twice...)
       db.activateOnCurrentThread()
       val oQuery = SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments, listener)
-      val future: scala.concurrent.Future[Unit] = db.command(oQuery).execute(args)
+      val future: Future[Unit] = db.command(oQuery).execute(args)
       future.onFailure(handleErrorAtSource)
     }).onFailure(handleErrorAtSource)
 

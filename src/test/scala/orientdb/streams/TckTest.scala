@@ -10,25 +10,16 @@ import org.scalatest.testng.TestNGSuiteLike
 
 import scala.reflect.ClassTag
 
-abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironment() {
-  override def defaultTimeoutMillis(): Long = 200L
-}) with TestNGSuiteLike with TestKitBase {
-  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
+class MyTest extends PublisherVerification[ODocument](new TestEnvironment())
+    with TestNGSuiteLike with TestKitBase {
 
+  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test");
+  db.open("root", "test")
   implicit lazy val system = ActorSystem()
-  val uuid = java.util.UUID.randomUUID.toString
-  implicit val db = new ODatabaseDocumentTx(s"memory:testdb$uuid")
   implicit val ec = system.dispatcher
-  db.create()
 
-  // big TODO... run for all impl, cleanup, etc...
-  val users = (for (i ← 0 to 1000) yield {
-    val doc = new ODocument("Person")
-    doc.field("name", s"Luke$i")
-    doc.field("surname", s"Skywalker$i")
-    doc.save()
-  }).toVector
-  //
+  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
+
   override def createPublisher(elements: Long): Publisher[ODocument] = {
     val query = NonBlockingQuery[ODocument](s"SELECT * FROM Person ORDER BY name LIMIT $elements")
     query.execute()
@@ -40,12 +31,69 @@ abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironm
   }
 }
 
-class TckTestLocking extends TckTest {
+abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironment() {
+  override def defaultTimeoutMillis(): Long = 200L
+}) with TestNGSuiteLike with TestKitBase {
+
+  val uuid = java.util.UUID.randomUUID.toString
+  def prepareDb(): ODatabaseDocumentTx
+  implicit val db: ODatabaseDocumentTx = prepareDb()
+
+  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
+
+  implicit lazy val system = ActorSystem()
+  implicit val ec = system.dispatcher
+
+  // TODO: maxElements!
+  override def createPublisher(elements: Long): Publisher[ODocument] = {
+    val query = NonBlockingQuery[ODocument](s"SELECT * FROM Person ORDER BY name LIMIT $elements")
+    query.execute()
+  }
+
+  override def createFailedPublisher(): Publisher[ODocument] = {
+    val query = NonBlockingQuery[ODocument](s"SEL * FRM Person ORDER BY name")
+    query.execute()
+  }
+}
+
+abstract class InMemoryTckTest extends TckTest {
+  def prepareDb(): ODatabaseDocumentTx = {
+    val db = new ODatabaseDocumentTx(s"memory:testdb$uuid")
+    db.create()
+    val users = (for (i ← 0 to 1000) yield {
+      val doc = new ODocument("Person")
+      doc.field("name", s"Luke$i")
+      doc.field("surname", s"Skywalker$i")
+      doc.save()
+    }).toVector
+
+    db.commit()
+    db
+  }
+}
+
+abstract class RemoteTckTest extends TckTest {
+  def prepareDb(): ODatabaseDocumentTx = {
+    // REQUIRES SETUP BEFORE RUN
+    val db = new ODatabaseDocumentTx(s"remote:localhost/test")
+    db.open("root", "test")
+    db
+  }
+}
+
+class TckTestLocalLocking extends InMemoryTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
 }
 
-class TckTestBuffering extends TckTest {
+class TckTestLocalBuffering extends InMemoryTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
 }
 
+class TckTestRemoteLocking extends RemoteTckTest {
+  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
+}
+
+class TckTestRemoteBuffering extends RemoteTckTest {
+  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
+}
 

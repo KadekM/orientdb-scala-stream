@@ -45,5 +45,5 @@ object NonBlockingQueryLocking {
     limit: Int = -1,
     fetchPlan: String = null,
     args: Map[Object, Object] = Map.empty[Object, Object])(implicit system: ActorSystem) =
-    new NonBlockingQueryLocking[A](query, limit, fetchPlan, args)
+    new NonBlockingQueryLocking[A](query, limit, "*:-1", args)
 }
