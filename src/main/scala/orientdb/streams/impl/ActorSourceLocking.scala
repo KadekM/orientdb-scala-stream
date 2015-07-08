@@ -28,7 +28,6 @@ private class ActorSourceLocking[A: ClassTag]() extends ActorPublisher[A] {
       // - from downstream, when it is canceled.
       // If it's canceled, we want to tell DB to stop processing. Otherwise just stop.
     case Complete         ⇒
-      //println("COMPLETE")
       if (isCanceled) {
         listenerRef ! Stop
       }
@@ -37,7 +36,7 @@ private class ActorSourceLocking[A: ClassTag]() extends ActorPublisher[A] {
 
     case ErrorOccurred(t) ⇒
       listenerRef ! Stop
-      t.printStackTrace()
+      //t.printStackTrace()
       onErrorThenStop(t)
   }
 

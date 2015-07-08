@@ -10,27 +10,6 @@ import org.scalatest.testng.TestNGSuiteLike
 
 import scala.reflect.ClassTag
 
-class MyTest extends PublisherVerification[ODocument](new TestEnvironment())
-    with TestNGSuiteLike with TestKitBase {
-
-  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test");
-  db.open("root", "test")
-  implicit lazy val system = ActorSystem()
-  implicit val ec = system.dispatcher
-
-  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
-
-  override def createPublisher(elements: Long): Publisher[ODocument] = {
-    val query = NonBlockingQuery[ODocument](s"SELECT * FROM Person ORDER BY name LIMIT $elements")
-    query.execute()
-  }
-
-  override def createFailedPublisher(): Publisher[ODocument] = {
-    val query = NonBlockingQuery[ODocument](s"SEL * FRM Person ORDER BY name")
-    query.execute()
-  }
-}
-
 abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironment() {
   override def defaultTimeoutMillis(): Long = 200L
 }) with TestNGSuiteLike with TestKitBase {
@@ -85,15 +64,17 @@ class TckTestLocalLocking extends InMemoryTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
 }
 
+/*
 class TckTestLocalBuffering extends InMemoryTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
 }
+*/
 
 class TckTestRemoteLocking extends RemoteTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
 }
-
+/*
 class TckTestRemoteBuffering extends RemoteTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
-}
+}*/
 

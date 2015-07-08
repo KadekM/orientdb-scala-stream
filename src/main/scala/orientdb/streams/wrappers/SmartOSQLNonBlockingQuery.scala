@@ -46,19 +46,9 @@ private[wrappers] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec:
     val future = database match {
       case tx: ODatabaseDocumentTx ⇒
         Future {
-          //println("!!!!!!!!!!!!!!!!!!!!", tx.getStorage.asInstanceOf[OStorageRemoteThread])
           val db = tx.copy()
-          //val value: OResultSet[_] = try { superEx() }
-          val value: OResultSet[_] = superEx()
-          /*catch{
-            case e =>
-              println("--------------------")
-              e.printStackTrace()
-              throw e
-          }*/
-        /*  finally {
-          //  if (db != null) db.close() // TODOOOOOOOOOOOOOOO
-          }*/
+          val value: OResultSet[_] = superEx() // todo args, scala bug
+          // ---  if (db != null) db.close() --- // todo close on problem
         }
       case _ ⇒ Future.failed(new InvalidClassException("database is not of type ODatabaseDocumentTx"))
     }

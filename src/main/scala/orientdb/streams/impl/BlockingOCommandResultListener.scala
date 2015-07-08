@@ -46,7 +46,7 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
           signals.wait()
 
         signals.decrementAndGet()
-        //todo
+
        val x: ODocument = iRecord.asInstanceOf[ODocument]
         val z = x.toString() // ENFORCE FETCH TODO FOR NOW
         sourceRef ! Enqueue(x)
