@@ -22,7 +22,7 @@ private[streams] class NonBlockingQueryLocking[A: ClassTag](query: String,
     fetchPlan: String,
     arguments: scala.collection.immutable.Map[Object, Object]) extends NonBlockingQuery[A] {
 
-  override def execute(args: Any*)(implicit db: ODatabaseDocumentTx,
+  override def execute(params: AnyRef*)(implicit db: ODatabaseDocumentTx,
     system: ActorSystem,
     ec: ExecutionContext): Publisher[A] = {
 
@@ -38,7 +38,7 @@ private[streams] class NonBlockingQueryLocking[A: ClassTag](query: String,
       //TODO: SmartOSQLNonBlockingQuery starts a new future, so we kinda have redundancy (and we need to activate db twice...)
       db.activateOnCurrentThread()
       val oQuery = SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments, listener)
-      val future: Future[Unit] = db.command(oQuery).execute(args)
+      val future: Future[Unit] = db.command(oQuery).execute(params: _*)
       future.onFailure(handleErrorAtSource)
       future.onSuccess { case _ ⇒ sourceRef ! Complete }
     }).onFailure(handleErrorAtSource)

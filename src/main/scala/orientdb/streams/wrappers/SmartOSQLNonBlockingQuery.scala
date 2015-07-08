@@ -48,7 +48,7 @@ private[wrappers] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec:
       case tx: ODatabaseDocumentTx ⇒
         Future {
           val db = tx.copy() // copy must be inside future's closure! it does more than just copy
-          val value: OResultSet[_] = superEx() // todo args, scala bug
+          val value: OResultSet[_] = superExecute(iArgs: _*) // scala compiler bug I assume
           // todo: close db when something bad happens
         }
       case _ ⇒ Future.failed(new InvalidClassException("database is not of type ODatabaseDocumentTx"))
@@ -57,6 +57,7 @@ private[wrappers] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec:
     future.asInstanceOf[RET]
   }
 
-  private def superEx[RET](): RET = super.execute()
-  private def superExecute[RET](iArgs: AnyRef*): RET = super.execute(iArgs: _*)
+  private def superExecute[RET](iArgs: AnyRef*): RET = {
+    super.execute(iArgs :_*)
+  }
 }

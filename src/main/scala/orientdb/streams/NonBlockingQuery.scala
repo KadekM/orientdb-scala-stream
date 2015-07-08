@@ -12,7 +12,12 @@ import scala.reflect.ClassTag
  * Query which does not block, based on OrientDb NonBlockingQuery.
  */
 trait NonBlockingQuery[A] {
-  def execute(args: Any*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext): Publisher[A]
+  import scala.collection.JavaConverters._
+  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext): Publisher[A]
+  def executePositional(args: String*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext): Publisher[A] =
+    execute(args: _*)
+  def executeNamed(args: Map[String, String])(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext): Publisher[A] =
+    execute(args.asJava)
 }
 
 /*

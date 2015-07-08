@@ -37,6 +37,7 @@ private class ActorSourceLocking[A: ClassTag]() extends ActorPublisher[A] {
 
     case ErrorOccurred(t) ⇒
       listenerRef ! Stop
+      //t.printStackTrace()
       onErrorThenStop(t)
   }
 

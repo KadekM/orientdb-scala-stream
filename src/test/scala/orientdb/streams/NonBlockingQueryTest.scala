@@ -101,5 +101,27 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
       src.request(3)
       src.expectNoMsg()
     }
+
+    "positional params work" in {
+      val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person WHERE name = ?")
+
+      val src = Source(query.executePositional("Luke7")).runWith(TestSink.probe[ODocument])
+      src.request(1)
+      src.expectNext()
+      src.expectComplete()
+    }
+
+    "named params work" in {
+      val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person WHERE name = :nam")
+
+      import scala.collection.JavaConverters._
+      //val params = Map("nam" -> "Luke7").asJava
+
+      val params = Map("nam" -> "Luke7")
+      val src = Source(query.executeNamed(params)).runWith(TestSink.probe[ODocument])
+      src.request(1)
+      src.expectNext()
+      src.expectComplete()
+    }
   }
 }
