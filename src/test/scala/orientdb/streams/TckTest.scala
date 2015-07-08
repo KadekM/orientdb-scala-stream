@@ -25,7 +25,9 @@ abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironm
 
   // TODO: maxElements!
   override def createPublisher(elements: Long): Publisher[ODocument] = {
-    val query = NonBlockingQuery[ODocument](s"SELECT * FROM Person ORDER BY name LIMIT $elements")
+    val query = // LIMIT cant be <= 0, so we just return empty set
+      if (elements <= 0) NonBlockingQuery[ODocument](s"SELECT * FROM Person WHERE name='IDontExist'")
+      else NonBlockingQuery[ODocument](s"SELECT * FROM Person ORDER BY name LIMIT $elements")
     query.execute()
   }
 
