@@ -47,7 +47,7 @@ private[wrappers] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec:
       case tx: ODatabaseDocumentTx ⇒
         Future {
           val db = tx.copy()
-          val value: OResultSet[_] = try { superExecute(iArgs) }
+          val value: OResultSet[_] = try { superEx() }
           finally {
             if (db != null) db.close()
           }
@@ -58,5 +58,6 @@ private[wrappers] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec:
     future.asInstanceOf[RET]
   }
 
+  private def superEx[RET](): RET = super.execute()
   private def superExecute[RET](iArgs: AnyRef*): RET = super.execute(iArgs: _*)
 }
