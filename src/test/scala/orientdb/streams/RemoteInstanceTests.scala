@@ -79,7 +79,7 @@ class RemoteInstanceTests(_system: ActorSystem) extends TestKit(_system) with Wo
       Thread.sleep(3000)
     }
 
-    "why" ignore {
+    "wiy" ignore {
 
       val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
@@ -91,7 +91,7 @@ class RemoteInstanceTests(_system: ActorSystem) extends TestKit(_system) with Wo
       src.expectComplete()
     }
 
-    "why5" ignore {
+    "why5" in {
       val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 5")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
 
@@ -108,7 +108,7 @@ class RemoteInstanceTests(_system: ActorSystem) extends TestKit(_system) with Wo
 
       val query = NonBlockingQueryLocking[ODocument]("SEL * FROM Person ORDER BY name LIMIT 3")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
-      src.request(5)
+      //src.request(5)
 
       src.expectSubscriptionAndError()
     }

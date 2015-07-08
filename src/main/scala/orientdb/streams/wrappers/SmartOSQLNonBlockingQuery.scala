@@ -7,9 +7,10 @@ import com.orientechnologies.orient.core.command._
 import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.sql.OCommandExecutorSQLDelegate
-import com.orientechnologies.orient.core.sql.query.{OResultSet, OSQLQuery}
+import com.orientechnologies.orient.core.sql.query.{ OResultSet, OSQLQuery }
 
 import scala.concurrent.{ Future, ExecutionContext }
+import scala.util.{ Success, Try }
 
 object SmartOSQLNonBlockingQuery {
   OCommandManager.instance().registerExecutor(classOf[SmartOSQLNonBlockingQuery[_]], classOf[OCommandExecutorSQLDelegate])
@@ -46,9 +47,9 @@ private[wrappers] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec:
     val future = database match {
       case tx: ODatabaseDocumentTx ⇒
         Future {
-          val db = tx.copy()
+          val db = tx.copy() // copy must be inside future's closure! it does more than just copy
           val value: OResultSet[_] = superEx() // todo args, scala bug
-          // ---  if (db != null) db.close() --- // todo close on problem
+          // todo: close db when something bad happens
         }
       case _ ⇒ Future.failed(new InvalidClassException("database is not of type ODatabaseDocumentTx"))
     }

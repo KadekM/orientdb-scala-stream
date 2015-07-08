@@ -17,6 +17,8 @@ import scala.util.Try
  * This listener acquires semaphore before sending message to actor (thus is blocking).
  * Semaphore has to be released from owners of instance of this listener - to let him emit message
  * and process another row.
+ *
+ * Sends messages to sourceRef when reads next record. Never sends Complete() [read end()]
  */
 private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
     signals: AtomicLong) extends OCommandResultListener {
@@ -55,8 +57,15 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
     } else false
   }
 
+  /* Do not send OnComplete here!
+   * end is called in 2 ways -
+   * 1) if stream is exhausted
+   * 2) if exception occurs (such as invalid query)
+   * This would mean that sourceRef would receive Completed event, which would be in
+   * race with Error coming from Future.
+   * => sometimes you'd get Completed event even when problem occurred with your stream
+   */
   override def end(): Unit = {
       fetchMore.set(false)
-      sourceRef ! Complete
   }
 }
