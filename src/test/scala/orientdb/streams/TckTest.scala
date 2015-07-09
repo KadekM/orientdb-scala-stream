@@ -14,9 +14,10 @@ abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironm
   override def defaultTimeoutMillis(): Long = 200L
 }) with TestNGSuiteLike with TestKitBase {
 
-  val uuid = java.util.UUID.randomUUID.toString
-  def prepareDb(): ODatabaseDocumentTx
-  implicit val db: ODatabaseDocumentTx = prepareDb()
+  protected val uuid = java.util.UUID.randomUUID.toString
+  protected def prepareDb(): ODatabaseDocumentTx
+  protected def beforeEachPublisher(): Unit = {}
+  implicit var db: ODatabaseDocumentTx = prepareDb() // TODO: ugly hack
 
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
 
@@ -25,6 +26,7 @@ abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironm
 
   // TODO: maxElements!
   override def createPublisher(elements: Long): Publisher[ODocument] = {
+    beforeEachPublisher()
     val query = // LIMIT cant be <= 0, so we just return empty set
       if (elements <= 0) NonBlockingQuery[ODocument](s"SELECT * FROM Person WHERE name='IDontExist'")
       else NonBlockingQuery[ODocument](s"SELECT * FROM Person ORDER BY name LIMIT $elements")
@@ -32,6 +34,7 @@ abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironm
   }
 
   override def createFailedPublisher(): Publisher[ODocument] = {
+    beforeEachPublisher()
     val query = NonBlockingQuery[ODocument](s"SEL * FRM Person ORDER BY name")
     query.execute()
   }
@@ -53,9 +56,15 @@ abstract class InMemoryTckTest extends TckTest {
   }
 }
 
+// REQUIRES SETUP BEFORE RUN
 abstract class RemoteTckTest extends TckTest {
+  override def beforeEachPublisher(): Unit = {
+    if (db.isClosed) {
+      db = prepareDb()
+    }
+  }
+
   def prepareDb(): ODatabaseDocumentTx = {
-    // REQUIRES SETUP BEFORE RUN
     val db = new ODatabaseDocumentTx(s"remote:localhost/test")
     db.open("root", "test")
     db
@@ -75,6 +84,7 @@ class TckTestLocalBuffering extends InMemoryTckTest {
 class TckTestRemoteLocking extends RemoteTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
 }
+
 /*
 class TckTestRemoteBuffering extends RemoteTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)

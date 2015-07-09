@@ -9,20 +9,20 @@ import com.orientechnologies.orient.core.command.OCommandResultListener
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.OCommandSQL
-import com.orientechnologies.orient.core.sql.query.{OSQLAsynchQuery, OSQLSynchQuery}
-import org.scalatest.{WordSpecLike, Matchers}
+import com.orientechnologies.orient.core.sql.query.{ OSQLAsynchQuery, OSQLSynchQuery }
+import org.scalatest.{ WordSpecLike, Matchers }
 import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
 
 // just playground
 class RemoteInstanceTests(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
   def this() = this(ActorSystem("remote-instance-tests"))
   val uuid = java.util.UUID.randomUUID.toString
-  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test");db.open("root", "test")
+  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "test")
   //implicit val db = new ODatabaseDocumentTx(s"memory:test$uuid");db.create()
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
 
-/*
+  /*
   val amountOfRecords = 1000
    val users = (for (i ← 0 to amountOfRecords) yield {
       val doc = new ODocument("Person")
@@ -31,7 +31,7 @@ class RemoteInstanceTests(_system: ActorSystem) extends TestKit(_system) with Wo
       doc.save()
     }).toVector
     db.commit()*/
-/*
+  /*
 
   if (db.countClass("Person") != amountOfRecords) {
     db.command(new OCommandSQL("DELETE * FROM Person"))
@@ -66,7 +66,7 @@ class RemoteInstanceTests(_system: ActorSystem) extends TestKit(_system) with Wo
       val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person ORDER BY name")
 
       println("starting")
-      Source(query.execute()).runForeach { x =>
+      Source(query.execute()).runForeach { x ⇒
 
         //db.activateOnCurrentThread()
         println(x)
@@ -75,11 +75,10 @@ class RemoteInstanceTests(_system: ActorSystem) extends TestKit(_system) with Wo
       //val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
       //src.request(10000)
 
-
       Thread.sleep(3000)
     }
 
-    "wiy" ignore {
+    "wiy" in {
 
       val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
@@ -91,7 +90,7 @@ class RemoteInstanceTests(_system: ActorSystem) extends TestKit(_system) with Wo
       src.expectComplete()
     }
 
-    "why5" ignore {
+    "why5" in {
       val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 5")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
 
@@ -104,11 +103,12 @@ class RemoteInstanceTests(_system: ActorSystem) extends TestKit(_system) with Wo
       src.expectComplete()
     }
 
-    "error" ignore {
+    "error" in {
       val query = NonBlockingQueryLocking[ODocument]("SEL * FROM Person ORDER BY name LIMIT 3")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
 
       src.expectSubscriptionAndError()
     }
+
   }
 }
