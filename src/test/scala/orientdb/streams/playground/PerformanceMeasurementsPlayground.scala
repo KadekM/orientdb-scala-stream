@@ -1,4 +1,4 @@
-package orientdb.streams
+package orientdb.streams.playground
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
@@ -7,8 +7,8 @@ import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestKit
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
-import com.orientechnologies.orient.core.sql.query.{OResultSet, OSQLSynchQuery}
 import org.scalatest.{Matchers, WordSpecLike}
+import orientdb.streams.{NonBlockingQueryLocking, NonBlockingQueryBuffering, NonBlockingQuery}
 
 import scala.reflect.ClassTag
 

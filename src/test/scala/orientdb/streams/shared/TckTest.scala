@@ -1,12 +1,13 @@
-package orientdb.streams
+package orientdb.streams.shared
 
 import akka.actor.ActorSystem
 import akka.testkit.TestKitBase
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.reactivestreams.Publisher
-import org.reactivestreams.tck.{ TestEnvironment, PublisherVerification }
+import org.reactivestreams.tck.{PublisherVerification, TestEnvironment}
 import org.scalatest.testng.TestNGSuiteLike
+import orientdb.streams.NonBlockingQuery
 
 import scala.reflect.ClassTag
 
@@ -71,19 +72,13 @@ abstract class RemoteTckTest extends TckTest {
   }
 }
 
-class TckTestLocalLocking extends InMemoryTckTest {
-  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
-}
+
 
 /*
 class TckTestLocalBuffering extends InMemoryTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
 }
 */
-
-class TckTestRemoteLocking extends RemoteTckTest {
-  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryLocking[A](query)
-}
 
 /*
 class TckTestRemoteBuffering extends RemoteTckTest {

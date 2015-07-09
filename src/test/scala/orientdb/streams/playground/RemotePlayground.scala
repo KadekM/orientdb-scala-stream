@@ -1,4 +1,4 @@
-package orientdb.streams
+package orientdb.streams.playground
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
@@ -8,13 +8,12 @@ import akka.testkit.TestKit
 import com.orientechnologies.orient.core.command.OCommandResultListener
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
-import com.orientechnologies.orient.core.sql.OCommandSQL
-import com.orientechnologies.orient.core.sql.query.{ OSQLAsynchQuery, OSQLSynchQuery }
-import org.scalatest.{ WordSpecLike, Matchers }
-import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
+import com.orientechnologies.orient.core.sql.query.OSQLAsynchQuery
+import org.scalatest.{Matchers, WordSpecLike}
+import orientdb.streams.NonBlockingQueryLocking
 
 // just playground
-class RemoteInstanceTests(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
+class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
   def this() = this(ActorSystem("remote-instance-tests"))
   val uuid = java.util.UUID.randomUUID.toString
   implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "test")
