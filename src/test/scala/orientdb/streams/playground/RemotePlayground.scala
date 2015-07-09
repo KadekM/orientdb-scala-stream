@@ -10,7 +10,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLAsynchQuery
 import org.scalatest.{Matchers, WordSpecLike}
-import orientdb.streams.{OrientNonLazyLoader, NonBlockingQueryBackpressuring}
+import orientdb.streams.{OrientLoaderDeserializing, NonBlockingQueryBackpressuring}
 
 // just playground
 class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
@@ -20,7 +20,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
   //implicit val db = new ODatabaseDocumentTx(s"memory:test$uuid");db.create()
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
-  implicit val loader = OrientNonLazyLoader()
+  implicit val loader = OrientLoaderDeserializing()
 
   /*
   val amountOfRecords = 1000

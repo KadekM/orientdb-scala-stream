@@ -8,7 +8,7 @@ import akka.testkit.TestKit
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.scalatest.{Matchers, WordSpecLike}
-import orientdb.streams.{OrientNonLazyLoader, NonBlockingQueryBackpressuring, NonBlockingQueryBuffering, NonBlockingQuery}
+import orientdb.streams.{OrientLoaderDeserializing, NonBlockingQueryBackpressuring, NonBlockingQueryBuffering, NonBlockingQuery}
 
 import scala.reflect.ClassTag
 
@@ -20,7 +20,7 @@ abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_sy
   //implicit val db = new ODatabaseDocumentTx(s"memory:testdb$uuid");db.create()
   implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "test")
   implicit val materializer = ActorMaterializer()
-  implicit val loader = OrientNonLazyLoader()
+  implicit val loader = OrientLoaderDeserializing()
   implicit val ec = system.dispatcher
   val amountOfUsers = 10000
 

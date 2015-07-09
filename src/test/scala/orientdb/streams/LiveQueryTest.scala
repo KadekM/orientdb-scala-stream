@@ -19,7 +19,7 @@ class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
   def this() = this(ActorSystem("test"))
   //implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test")
   implicit val db = new ODatabaseDocumentTx(s"memory:mylittletest")
-  implicit val loader = OrientNonLazyLoader()
+  implicit val loader = OrientLoaderDeserializing()
   // db.open("admin", "admin")
   db.create()
 
