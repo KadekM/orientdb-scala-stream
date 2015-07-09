@@ -7,7 +7,7 @@ import com.orientechnologies.orient.core.record.impl.ODocument
 import org.reactivestreams.Publisher
 import org.reactivestreams.tck.{PublisherVerification, TestEnvironment}
 import org.scalatest.testng.TestNGSuiteLike
-import orientdb.streams.NonBlockingQuery
+import orientdb.streams.{NonBlockingQueryBuffering, NonBlockingQuery}
 
 import scala.reflect.ClassTag
 
@@ -72,16 +72,11 @@ abstract class RemoteTckTest extends TckTest {
   }
 }
 
-
-
-/*
 class TckTestLocalBuffering extends InMemoryTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
 }
-*/
 
-/*
 class TckTestRemoteBuffering extends RemoteTckTest {
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
-}*/
+}
 

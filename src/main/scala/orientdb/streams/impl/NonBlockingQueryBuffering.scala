@@ -19,24 +19,25 @@ private[streams] class NonBlockingQueryBuffering[A: ClassTag](query: String,
     extends NonBlockingQuery[A] {
 
   def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext): Publisher[A] = {
-    val actorRef = system.actorOf(Props(new ActorSourceBuffering[A]))
-    val listener = createListener(actorRef)
+    val sourceRef = system.actorOf(Props(new ActorSourceBuffering[A]))
+    val listener = createListener(sourceRef)
     val oQuery = SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments, listener)
 
-    val future: Future[Unit] = db.command(oQuery).execute(args)
-    future.onFailure { case t: Throwable ⇒ actorRef ! ErrorOccurred(t) }
+    val future: Future[Unit] = db.command(oQuery).execute(args: _*)
+    future.onFailure { case t: Throwable ⇒ sourceRef ! ErrorOccurred(t) }
+    future.onSuccess { case _ ⇒ sourceRef ! Complete }
 
-    ActorPublisher[A](actorRef)
+    ActorPublisher[A](sourceRef)
   }
 
   private def createListener(ref: ActorRef) = new OCommandResultListener {
     override def result(iRecord: Any): Boolean = {
       ref ! Enqueue(iRecord)
+      val forceFetch = iRecord.toString // TODO to be changed...
       true
     }
 
     override def end(): Unit = {
-      ref ! Complete
     }
   }
 }

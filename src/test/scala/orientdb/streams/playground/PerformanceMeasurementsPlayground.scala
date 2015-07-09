@@ -17,14 +17,23 @@ import scala.reflect.ClassTag
 // TODO no real tests, just something
 abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
   val uuid = java.util.UUID.randomUUID.toString
-  implicit val db = new ODatabaseDocumentTx(s"memory:testdb$uuid")
+  //implicit val db = new ODatabaseDocumentTx(s"memory:testdb$uuid");db.create()
+  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "test")
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
-  db.create()
   val amountOfUsers = 10000
 
   val runtime  = Runtime.getRuntime()
   def name: String
+/*
+
+  val users = (for (i ← 0 to amountOfUsers) yield {
+    val doc = new ODocument("Person")
+    doc.field("name", s"Luke$i")
+    doc.field("surname", s"Skywalker$i")
+    doc.save()
+  }).toVector
+*/
 
   // just toy tools
 
@@ -44,25 +53,18 @@ abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_sy
     result
   }
 
-  val users = (for (i ← 0 to amountOfUsers) yield {
-    val doc = new ODocument("Person")
-    doc.field("name", s"Luke$i")
-    doc.field("surname", s"Skywalker$i")
-    doc.save()
-  }).toVector
-
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
 
-  "Performance" ignore {
+  "Performance" should {
     "something" in {
       time {
-        val query = memory {
+        val query = {
           NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name")
         }
-        val src = memory {
+        val src =  {
           Source(query.execute()).runWith(TestSink.probe[ODocument])
         }
-        memory {
+        {
           src.request(1)
         }
       }
