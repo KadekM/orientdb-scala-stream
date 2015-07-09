@@ -103,7 +103,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
     }
 
     "positional params work" in {
-      val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person WHERE name = ?")
+      val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person WHERE name = ?")
 
       val src = Source(query.executePositional("Luke7")).runWith(TestSink.probe[ODocument])
       src.request(1)
@@ -112,7 +112,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
     }
 
     "named params work" in {
-      val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person WHERE name = :nam")
+      val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person WHERE name = :nam")
 
       import scala.collection.JavaConverters._
       //val params = Map("nam" -> "Luke7").asJava

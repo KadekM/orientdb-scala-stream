@@ -10,7 +10,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLAsynchQuery
 import org.scalatest.{Matchers, WordSpecLike}
-import orientdb.streams.NonBlockingQueryLocking
+import orientdb.streams.NonBlockingQueryBackpressuring
 
 // just playground
 class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
@@ -62,7 +62,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
     }
 
     "somewhat" ignore {
-      val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person ORDER BY name")
+      val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name")
 
       println("starting")
       Source(query.execute()).runForeach { x ⇒
@@ -79,7 +79,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
 
     "wiy" in {
 
-      val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
+      val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
 
       src.request(3)
@@ -90,7 +90,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
     }
 
     "why5" in {
-      val query = NonBlockingQueryLocking[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 5")
+      val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 5")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
 
       src.request(5)
@@ -103,7 +103,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
     }
 
     "error" in {
-      val query = NonBlockingQueryLocking[ODocument]("SEL * FROM Person ORDER BY name LIMIT 3")
+      val query = NonBlockingQueryBackpressuring[ODocument]("SEL * FROM Person ORDER BY name LIMIT 3")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
 
       src.expectSubscriptionAndError()

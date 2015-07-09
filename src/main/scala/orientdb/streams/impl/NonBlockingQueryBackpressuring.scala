@@ -9,7 +9,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import org.reactivestreams.Publisher
 import orientdb.streams.ActorSource.{ Complete, ErrorOccurred }
 import orientdb.streams.NonBlockingQuery
-import orientdb.streams.impl.ActorSourceLocking.RegisterListener
+import orientdb.streams.impl.ActorSourceWithListener.RegisterListener
 import orientdb.streams.impl.ActorControlledResultListener.GiveMeListener
 import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
 
@@ -17,7 +17,7 @@ import scala.concurrent.{ Future, ExecutionContext }
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
-private[streams] class NonBlockingQueryLocking[A: ClassTag](query: String,
+private[streams] class NonBlockingQueryBackpressuring[A: ClassTag](query: String,
     limit: Int,
     fetchPlan: String,
     arguments: scala.collection.immutable.Map[Object, Object]) extends NonBlockingQuery[A] {
@@ -27,7 +27,7 @@ private[streams] class NonBlockingQueryLocking[A: ClassTag](query: String,
     ec: ExecutionContext): Publisher[A] = {
 
     implicit val timeout = Timeout(3.seconds) // TODO timeout from outside
-    val sourceRef = system.actorOf(Props(new ActorSourceLocking[A]))
+    val sourceRef = system.actorOf(Props(new ActorSourceWithListener[A]))
     val listenerRef = system.actorOf(Props(new ActorControlledResultListener(sourceRef)))
     def handleErrorAtSource: PartialFunction[Throwable, Unit] = { case t: Throwable ⇒ sourceRef ! ErrorOccurred(t) }
 

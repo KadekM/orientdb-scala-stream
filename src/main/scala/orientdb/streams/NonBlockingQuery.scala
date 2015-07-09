@@ -45,10 +45,10 @@ object NonBlockingQueryBuffering {
  *
  * Has full support for cancellation - when downstream cancels, database will stop the processing.
  */
-object NonBlockingQueryLocking {
+object NonBlockingQueryBackpressuring {
   def apply[A: ClassTag](query: String,
     limit: Int = -1,
     fetchPlan: String = null,
     args: Map[Object, Object] = Map.empty[Object, Object])(implicit system: ActorSystem) =
-    new NonBlockingQueryLocking[A](query, limit, "*:-1", args)
+    new NonBlockingQueryBackpressuring[A](query, limit, "*:-1", args)
 }
