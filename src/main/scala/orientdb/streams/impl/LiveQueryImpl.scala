@@ -38,7 +38,7 @@ private[streams] class LiveQueryImpl[A: ClassTag](
                                     )(implicit system: ActorSystem) extends LiveQuery[A] {
 
   //todo types
-  def execute(args: Any*)(implicit db: ODatabaseDocumentTx): CompleteablePublisher[A] = {
+  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx): CompleteablePublisher[A] = {
     val actorRef = system.actorOf(Props(new ActorSourceBuffering[A]))
 
     val listener = new OLiveResultListener {

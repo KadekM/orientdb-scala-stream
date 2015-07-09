@@ -9,7 +9,7 @@ import orientdb.streams.impl._
 import scala.reflect.ClassTag
 
 trait LiveQuery[A] {
-  def execute(args: Any*)(implicit db: ODatabaseDocumentTx): Publisher[A]
+  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx): Publisher[A]
 }
 
 object LiveQuery {
