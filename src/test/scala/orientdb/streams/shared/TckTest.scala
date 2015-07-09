@@ -7,7 +7,7 @@ import com.orientechnologies.orient.core.record.impl.ODocument
 import org.reactivestreams.Publisher
 import org.reactivestreams.tck.{PublisherVerification, TestEnvironment}
 import org.scalatest.testng.TestNGSuiteLike
-import orientdb.streams.{NonBlockingQueryBuffering, NonBlockingQuery}
+import orientdb.streams.{OrientNonLazyLoader, NonBlockingQueryBuffering, NonBlockingQuery}
 
 import scala.reflect.ClassTag
 
@@ -19,6 +19,7 @@ abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironm
   protected def prepareDb(): ODatabaseDocumentTx
   protected def beforeEachPublisher(): Unit = {}
   implicit var db: ODatabaseDocumentTx = prepareDb() // TODO: ugly hack
+  implicit val loader = OrientNonLazyLoader()
 
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
 

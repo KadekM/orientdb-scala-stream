@@ -4,6 +4,7 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.AtomicLong
 
 import akka.actor.{ Actor, ActorRef }
+import orientdb.streams.OrientLoader
 import orientdb.streams.impl.ActorControlledResultListener.{Stop, GiveMeListener, RequestedDemand}
 
 private object ActorControlledResultListener {
@@ -13,7 +14,7 @@ private object ActorControlledResultListener {
   case object Stop extends Message
 }
 
-private class ActorControlledResultListener(sourceRef: ActorRef) extends Actor {
+private class ActorControlledResultListener(sourceRef: ActorRef)(implicit loader: OrientLoader) extends Actor {
   val signals = new AtomicLong(0L)
   val listener = new BlockingOCommandResultListener(sourceRef, signals)
 

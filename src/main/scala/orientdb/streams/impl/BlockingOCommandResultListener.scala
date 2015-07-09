@@ -4,9 +4,11 @@ import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
 import akka.actor.ActorRef
+import com.orientechnologies.orient.core.Orient
 import com.orientechnologies.orient.core.command.OCommandResultListener
 import com.orientechnologies.orient.core.db.record.ORecordElement
 import com.orientechnologies.orient.core.record.impl.ODocument
+import orientdb.streams.OrientLoader
 import scala.concurrent.blocking
 import orientdb.streams.ActorSource.{ Complete, Enqueue }
 
@@ -20,8 +22,8 @@ import scala.util.Try
  *
  * Sends messages to sourceRef when reads next record. Never sends Complete() [read end()]
  */
-private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
-    signals: AtomicLong) extends OCommandResultListener {
+private[impl] class BlockingOCommandResultListener[A](sourceRef: ActorRef,
+    signals: AtomicLong)(implicit loader: OrientLoader) extends OCommandResultListener {
   // shared among two threads
   private val fetchMore = new AtomicBoolean(true)
 
@@ -50,7 +52,8 @@ private[impl] class BlockingOCommandResultListener(sourceRef: ActorRef,
         signals.decrementAndGet()
 
        val x: ODocument = iRecord.asInstanceOf[ODocument]
-        val z = x.toString() // ENFORCE FETCH TODO FOR NOW
+        loader(x)
+        //x.setLazyLoad(false)
         sourceRef ! Enqueue(x)
       }
       true

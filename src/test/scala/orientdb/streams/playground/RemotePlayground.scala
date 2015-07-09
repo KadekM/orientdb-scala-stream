@@ -10,7 +10,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLAsynchQuery
 import org.scalatest.{Matchers, WordSpecLike}
-import orientdb.streams.NonBlockingQueryBackpressuring
+import orientdb.streams.{OrientNonLazyLoader, NonBlockingQueryBackpressuring}
 
 // just playground
 class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
@@ -20,6 +20,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
   //implicit val db = new ODatabaseDocumentTx(s"memory:test$uuid");db.create()
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
+  implicit val loader = OrientNonLazyLoader()
 
   /*
   val amountOfRecords = 1000
@@ -61,7 +62,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
         .execute()
     }
 
-    "somewhat" ignore {
+    "somewhat" in {
       val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name")
 
       println("starting")
@@ -73,11 +74,10 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
 
       //val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
       //src.request(10000)
-
-      Thread.sleep(3000)
+      Thread.sleep(1000)
     }
 
-    "wiy" in {
+    "wiy" ignore {
 
       val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
@@ -89,7 +89,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
       src.expectComplete()
     }
 
-    "why5" in {
+    "why5" ignore {
       val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 5")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
 
@@ -102,7 +102,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
       src.expectComplete()
     }
 
-    "error" in {
+    "error" ignore {
       val query = NonBlockingQueryBackpressuring[ODocument]("SEL * FROM Person ORDER BY name LIMIT 3")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
 
