@@ -10,7 +10,7 @@ Supported
 - Named query execution
 - Parametrized query execution
 
-### Non blocking queries
+## Non blocking queries
 ```scalar
 val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person")
 val src = Source(query.execute()).runForeach(println) // prints all the results
@@ -23,7 +23,11 @@ val src = Source(query.execute()).map(myMethod).filter(myFilter).runFold(...)
 ```
 This will start the query on database, and results will be aggregated as database provides them. They will be pushed downstream accordingly to reactive-streams specification (based on demand...). Cancelling subscription will not stop db from finishing query, but elements will no longer be buffered.
 
-### Implicits
+## Live queries
+TODO
+
+
+## Implicits
 
 To execute the queries you need following implicits:
 ```scala
@@ -39,9 +43,6 @@ Loader specified what to do with your entity before it is sent to the source of 
 
 ##### ExecutionContext
 Async queries run on separate thread.
-
-### Live queries
-TODO
 
 ## FAQ
 Why does `Source(query.execute()).runForeach(println)` produce inconstitent strings ? Sometimes with Person prefix, sometimes without ?
