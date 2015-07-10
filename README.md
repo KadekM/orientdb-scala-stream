@@ -18,8 +18,8 @@ val src = Source(query.execute()).runForeach(println) // prints all the results
 This will backpressure the databse - if there is no demand from downstream, database won't perform the fetch. Cancelling subscription will stop database from fetching next rows. 
 
 ```scala
-val query = NonBlockingQueryBuffering[ODocument]("SELECT * FROM Person")
-val src = Source(query.execute()).map(myMethod).filter(myFilter).runFold(...) 
+val query = NonBlockingQueryBuffering[ODocument]("SELECT * FROM Person WHERE name = :lookingFor")
+val src = Source(query.executeNamed("lookingFor" -> "Peter")).map(myMethod).filter(myFilter).runFold(...) 
 ```
 This will start the query on database, and results will be aggregated as database provides them. They will be pushed downstream accordingly to reactive-streams specification (based on demand...). Cancelling subscription will not stop db from finishing query, but elements will no longer be buffered.
 
