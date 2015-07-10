@@ -11,7 +11,7 @@ Supported
 - Parametrized query execution
 
 ## Non blocking queries
-```scalar
+```scala
 val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person")
 val src = Source(query.execute()).runForeach(println) // prints all the results
 ```
