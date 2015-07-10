@@ -73,11 +73,7 @@ abstract class RemoteTckTest extends TckTest {
   }
 }
 
-class TckTestLocalBuffering extends InMemoryTckTest {
-  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
-}
 
-class TckTestRemoteBuffering extends RemoteTckTest {
-  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
-}
+
+
 
