@@ -7,9 +7,10 @@ import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.db.record.ORecordOperation
+import com.orientechnologies.orient.core.query.live.OLiveQueryHook
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.serialization.serializer.record.binary.ORecordSerializerBinary
-import com.orientechnologies.orient.core.sql.OCommandSQL
+import com.orientechnologies.orient.core.sql.{OLiveCommandExecutorSQLFactory, OCommandSQL}
 import com.orientechnologies.orient.core.sql.query.{ OResultSet, OLiveQuery, OLiveResultListener }
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 
@@ -17,10 +18,15 @@ class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
     with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   def this() = this(ActorSystem("test"))
+
+
+  OLiveCommandExecutorSQLFactory.init()
   //implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test")
   implicit val db = new ODatabaseDocumentTx(s"memory:mylittletest")
+  db.activateOnCurrentThread()
   implicit val loader = OrientLoaderDeserializing()
-  // db.open("admin", "admin")
+  db.registerHook(new OLiveQueryHook(db));
+  // db.open("root", "test")
   db.create()
 
   override def afterAll() = {
@@ -40,35 +46,31 @@ class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
   implicit val materializer = ActorMaterializer()
 
   // tests are TODO, naming and all
-  "LiveQuery (TODO, not live queries do not work in RC4)" ignore {
+  "LiveQuery (TODO, not live queries do not work in RC4)" should {
     "playground, to be removed" in {
-      val query = LiveQuery[ODocument]("LIVE SELECT FROM Person")
+      val query = LiveQuery("LIVE SELECT FROM Person")
       Source(query.execute()).runForeach(println)
-      Thread.sleep(1000)
+      db.command(new OCommandSQL("insert into Person set name = 'foo', surname = 'bar'")).execute()
 
-      db.command(new OCommandSQL("insert into PERSON set name = 'foo', surname = 'bar'")).execute()
 
-      val listener = new OLiveResultListener {
+/*      val listener = new OLiveResultListener {
         override def onLiveResult(iLiveToken: Int, iOp: ORecordOperation): Unit = {
-          println("live token!", iLiveToken, iOp)
+          println("live tokeiiiin!", iLiveToken, iOp)
         }
       }
 
       db.asInstanceOf[ODatabaseDocumentTx].setSerializer(new ORecordSerializerBinary)
-      val document = new ODocument("Test")
-      document.save()
-      db.commit()
 
-      val result: OResultSet[ODocument] = db.query(new OLiveQuery[ODocument]("live select from Test", listener))
+      val result: OResultSet[ODocument] = db.query(new OLiveQuery[ODocument]("live select from Person", listener))
       println(result.get(0))
 
-      db.command(new OCommandSQL("insert into Test set name='foo', surname='bar'")).execute()
+      db.command(new OCommandSQL("insert into Person set name='foo', surname='bar'")).execute()
       db.commit()
 
-      db.command(new OCommandSQL("update Test set name = 'baz' where surname = 'bar'")).execute()
+      db.command(new OCommandSQL("update Person set name = 'baz' where surname = 'bar'")).execute()
       db.commit()
 
-      Thread.sleep(2000)
+ */     Thread.sleep(2000)
     }
 
     "inserting after live select" in {
