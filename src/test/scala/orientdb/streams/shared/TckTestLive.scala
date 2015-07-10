@@ -5,11 +5,11 @@ import akka.testkit.TestKitBase
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.query.live.OLiveQueryHook
 import com.orientechnologies.orient.core.record.impl.ODocument
-import com.orientechnologies.orient.core.sql.{OLiveCommandExecutorSQLFactory, OCommandSQL}
+import com.orientechnologies.orient.core.sql.{ OLiveCommandExecutorSQLFactory, OCommandSQL }
 import org.reactivestreams.Publisher
-import org.reactivestreams.tck.{PublisherVerification, TestEnvironment}
+import org.reactivestreams.tck.{ PublisherVerification, TestEnvironment }
 import org.scalatest.testng.TestNGSuiteLike
-import orientdb.streams.{LiveQueryData, LiveQuery, NonBlockingQuery, OrientLoaderDeserializing}
+import orientdb.streams.{ LiveQueryData, LiveQuery, NonBlockingQuery, OrientLoaderDeserializing }
 
 import scala.reflect.ClassTag
 
@@ -36,7 +36,7 @@ abstract class TckTestLive extends PublisherVerification[LiveQueryData](new Test
     val source = query.execute()
 
     // we bound it so tests dont reuqire too much (inserting Int.MaxValue-times to db would take a while)
-    for (_ <- 1L to Math.min(maxNumberOfElementsToInsert, elements)) {
+    for (_ ← 1L to Math.min(maxNumberOfElementsToInsert, elements)) {
       db.command(new OCommandSQL("insert into DataTable set key = 'value'")).execute().asInstanceOf[ODocument]
     }
     db.commit()
@@ -56,11 +56,9 @@ class InMemoryTckTestLive extends TckTestLive {
     OLiveCommandExecutorSQLFactory.init()
     val db = new ODatabaseDocumentTx(s"memory:testdb$uuid")
     db.create()
-    val users = (for (i ← 0 to 1000) yield {
-      val doc = new ODocument("DataTable")
-      doc.field("key", s"value$i")
-      doc.save()
-    }).toVector
+    val doc = new ODocument("DataTable")
+    doc.field("key", s"value")
+    doc.save()
     db.registerHook(new OLiveQueryHook(db))
     db.commit()
     db
@@ -78,6 +76,11 @@ class RemoteTckTestLive extends TckTestLive {
   def prepareDb(): ODatabaseDocumentTx = {
     val db = new ODatabaseDocumentTx(s"remote:localhost/test")
     db.open("root", "test")
+    db.command(new OCommandSQL("DELETE FROM DataTable")).execute()
+    val doc = new ODocument("DataTable")
+    doc.field("key", s"value")
+    doc.save()
+    db.commit()
     db
   }
 }

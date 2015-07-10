@@ -5,9 +5,9 @@ import akka.testkit.TestKitBase
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.reactivestreams.Publisher
-import org.reactivestreams.tck.{PublisherVerification, TestEnvironment}
+import org.reactivestreams.tck.{ PublisherVerification, TestEnvironment }
 import org.scalatest.testng.TestNGSuiteLike
-import orientdb.streams.{OrientLoaderDeserializing, NonBlockingQueryBuffering, NonBlockingQuery}
+import orientdb.streams.{ OrientLoaderDeserializing, NonBlockingQueryBuffering, NonBlockingQuery }
 
 import scala.reflect.ClassTag
 
@@ -72,8 +72,3 @@ abstract class RemoteTckTest extends TckTest {
     db
   }
 }
-
-
-
-
-

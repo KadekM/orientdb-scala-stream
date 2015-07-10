@@ -64,7 +64,7 @@ class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
 
   import scala.concurrent.ExecutionContext.Implicits.global
   // tests are TODO, naming and all
-  "LiveQuery (TODO, not live queries do not work in RC4)" should {
+  "LiveQueryPlayground" ignore {
     "old" ignore {
       val listener = new OLiveResultListener {
         override def onLiveResult(iLiveToken: Int, iOp: ORecordOperation): Unit = {

@@ -57,7 +57,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
     override def end(): Unit = {}
   }
 
-  "something" should {
+  "RemotePlayground" ignore {
     "old" ignore {
 
       val q = db.command(new OSQLAsynchQuery[ODocument]("SELECT * FROM Person ORDER BY name", oldStyleListener))

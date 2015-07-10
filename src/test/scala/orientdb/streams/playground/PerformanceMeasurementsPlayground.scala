@@ -7,15 +7,13 @@ import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestKit
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
-import org.scalatest.{Matchers, WordSpecLike}
-import orientdb.streams.{OrientLoaderDeserializing, NonBlockingQueryBackpressuring, NonBlockingQueryBuffering, NonBlockingQuery}
+import org.scalatest.{ Matchers, WordSpecLike }
+import orientdb.streams.{ OrientLoaderDeserializing, NonBlockingQueryBackpressuring, NonBlockingQueryBuffering, NonBlockingQuery }
 
 import scala.concurrent.Await
 import scala.concurrent.duration._
 import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
-
-
 
 // TODO no real tests, just something
 abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
@@ -27,9 +25,9 @@ abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_sy
   implicit val ec = system.dispatcher
   val amountOfUsers = 10000
 
-  val runtime  = Runtime.getRuntime()
+  val runtime = Runtime.getRuntime()
   def name: String
-/*
+  /*
 
   val users = (for (i ← 0 to amountOfUsers) yield {
     val doc = new ODocument("Person")
@@ -41,7 +39,7 @@ abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_sy
 
   // just toy tools
 
-  def memory[R](block: => R): R = {
+  def memory[R](block: ⇒ R): R = {
     val before = runtime.totalMemory - runtime.freeMemory
     val r = block
     val after = runtime.totalMemory - runtime.freeMemory
@@ -49,7 +47,7 @@ abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_sy
     r
   }
 
-  def time[R](block: => R): R = {
+  def time[R](block: ⇒ R): R = {
     val t0 = System.nanoTime()
     val result = block
     val t1 = System.nanoTime()
@@ -59,13 +57,13 @@ abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_sy
 
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
 
-  "Performance" should {
+  "PerformancePlayground" ignore {
     "something" in {
       time {
         val query = {
           NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name")
         }
-        val src = Source(query.execute()).map(x => 1).runFold(0)(_+_)
+        val src = Source(query.execute()).map(x ⇒ 1).runFold(0)(_ + _)
 
         val r = Await.result(src, 100.seconds)
 
@@ -78,13 +76,12 @@ abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_sy
 
 class PerformanceMeasurementsBuffering(_system: ActorSystem) extends PerformanceMeasurements(_system) {
   def this() = this(ActorSystem("performance-non-blocking-query-buffering"))
-  def name="buffering"
+  def name = "buffering"
   override def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
 }
 
-
 class PerformanceMeasurementsBackpressuring(_system: ActorSystem) extends PerformanceMeasurements(_system) {
   def this() = this(ActorSystem("performance-non-blocking-query-locking"))
-  def name="locking"
+  def name = "locking"
   override def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBackpressuring[A](query)
 }
