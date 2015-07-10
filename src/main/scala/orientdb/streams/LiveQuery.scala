@@ -7,7 +7,7 @@ import org.reactivestreams.Publisher
 import orientdb.streams.impl._
 
 trait LiveQuery {
-  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx): Publisher[LiveQueryData]
+  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, loader: OrientLoader): Publisher[LiveQueryData]
 }
 
 object LiveQuery {

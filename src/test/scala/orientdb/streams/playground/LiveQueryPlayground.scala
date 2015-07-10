@@ -6,10 +6,13 @@ import akka.stream.actor.{ActorSubscriber, OneByOneRequestStrategy, RequestStrat
 import akka.stream.scaladsl.{Sink, Source}
 import akka.testkit._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import com.orientechnologies.orient.core.db.record.ORecordOperation
 import com.orientechnologies.orient.core.query.live.OLiveQueryHook
 import com.orientechnologies.orient.core.record.impl.ODocument
+import com.orientechnologies.orient.core.sql.query.{OLocalLiveResultListener, OLiveResultListener, OLiveQuery}
 import com.orientechnologies.orient.core.sql.{OCommandSQL, OLiveCommandExecutorSQLFactory}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
+import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
 import orientdb.streams.{LiveQuery, OrientLoaderDeserializing}
 
 class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
@@ -18,18 +21,17 @@ class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
   def this() = this(ActorSystem("test"))
 
 
-  OLiveCommandExecutorSQLFactory.init()
-  //implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test")
-  implicit val db = new ODatabaseDocumentTx(s"memory:mylittletest")
-  db.activateOnCurrentThread()
-  implicit val loader = OrientLoaderDeserializing()
-  db.registerHook(new OLiveQueryHook(db));
+  //OLiveCommandExecutorSQLFactory.init()
+  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "test")
+  //implicit val db = new ODatabaseDocumentTx(s"memory:mylittletest"); db.create()
+  //db.activateOnCurrentThread()
+  //implicit val loader = OrientLoaderDeserializing();
+  //db.registerHook(new OLiveQueryHook(db))
   // db.open("root", "test")
-  db.create()
 
   override def afterAll() = {
     TestKit.shutdownActorSystem(system)
-    db.drop()
+   // db.drop()
   }
 
   val users = (for (i ← 0 to 20) yield addUser(i)).toVector
@@ -59,13 +61,35 @@ class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
     override protected def requestStrategy: RequestStrategy = OneByOneRequestStrategy
   }
 
+  import scala.concurrent.ExecutionContext.Implicits.global
   // tests are TODO, naming and all
   "LiveQuery (TODO, not live queries do not work in RC4)" should {
+    "old" ignore {
+      val listener = new OLiveResultListener {
+        override def onLiveResult(iLiveToken: Int, iOp: ORecordOperation): Unit = {
+          if (!db.isActiveOnCurrentThread) db.activateOnCurrentThread
+          println(iOp, Thread.currentThread.getId)
+        }
+      }
+
+      db.query(new OLiveQuery[ODocument]("LIVE SELECT FROM Person",listener))
+
+      for (i <- 1 to 2) {
+        println("inserting")
+
+        db.command(new OCommandSQL("insert into Person set name = 'foo', surname = 'bar'")).execute()
+
+        Thread.sleep(1000)
+      }
+    }
+
     "playground, to be removed" in {
       val query = LiveQuery("LIVE SELECT FROM Person")
       val qe = query.execute()
       val actorSink = system.actorOf(Props(new ActorSink))
-      Source(qe).runWith(Sink(ActorSubscriber(actorSink)))
+     Source(qe).runWith(Sink(ActorSubscriber(actorSink)))
+     // val z =Source(qe).runForeach(println)
+     // z.onFailure{case e => println(e)}
 
       for (i <- 1 to 4) {
         println("inserting")
@@ -85,16 +109,19 @@ class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
     "deleting after live select" in {
     }
 
-    "closing stream stops listening to insertions" in {
+    "cancelling subscription stops listening to insertions" in {
     }
 
-    "closing stream stops listening to updates" in {
+    "cancelling subscription stops listening to updates" in {
     }
 
-    "closing stream stops listening to deletes" in {
+    "cancelling subscription stops listening to deletes" in {
     }
 
-    "error propagation" in {
+    "error propagation for invalid query" in {
+    }
+
+    "error propagation when database closes in middle?" in {
     }
   }
 }

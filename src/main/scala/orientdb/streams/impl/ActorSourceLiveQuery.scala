@@ -108,6 +108,6 @@ private[impl] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
     val dbCopy = db.copy() // TODO*: maybe we can send command instead of token and execute that?
     dbCopy.activateOnCurrentThread()
     dbCopy.command(new OCommandSQL(s"live unsubscribe ${token}")).execute() // see *TODO
-    dbCopy.close()
+    //dbCopy.close()
   }
 }

@@ -20,7 +20,8 @@ object SmartOSQLNonBlockingQuery {
     limit: Int,
     fetchPlan: String,
     arguments: Map[Object, Object],
-    listener: OCommandResultListener)(implicit ec: ExecutionContext): OSQLQuery[A] = new SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments.asJava, listener)
+    listener: OCommandResultListener)(implicit ec: ExecutionContext): OSQLQuery[A] =
+      new SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments.asJava, listener)
 }
 // This class's execute reflect OSQLNonBlockingQuery's execute, except uses Scala's Future and
 // correctly propagates problems (future fails).
