@@ -13,10 +13,10 @@ import scala.reflect.ClassTag
  */
 trait NonBlockingQuery[A] {
   import scala.collection.JavaConverters._
-  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader): Publisher[A]
-  def executePositional(args: String*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader): Publisher[A] =
+  def execute[B](args: AnyRef*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader[B]): Publisher[B]
+  def executePositional[B](args: String*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader[B]): Publisher[B] =
     execute(args: _*)
-  def executeNamed(args: Map[String, String])(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader): Publisher[A] =
+  def executeNamed[B](args: Map[String, String])(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader[B]): Publisher[B] =
     execute(args.asJava)
 }
 

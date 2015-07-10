@@ -23,7 +23,7 @@ import scala.util.Try
  * Sends messages to sourceRef when reads next record. Never sends Complete() [read end()]
  */
 private[impl] class BlockingOCommandResultListener[A](sourceRef: ActorRef,
-    signals: AtomicLong)(implicit loader: OrientLoader) extends OCommandResultListener {
+    signals: AtomicLong)(implicit loader: OrientLoader[A]) extends OCommandResultListener {
   // shared among two threads
   private val fetchMore = new AtomicBoolean(true)
 
@@ -52,9 +52,8 @@ private[impl] class BlockingOCommandResultListener[A](sourceRef: ActorRef,
         signals.decrementAndGet()
 
        val x: ODocument = iRecord.asInstanceOf[ODocument]
-        loader(x)
         //x.setLazyLoad(false)
-        sourceRef ! Enqueue(x)
+        sourceRef ! Enqueue(loader(x))
       }
       true
     } else false

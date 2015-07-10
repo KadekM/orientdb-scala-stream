@@ -14,7 +14,7 @@ private object ActorControlledResultListener {
   case object Stop extends Message
 }
 
-private class ActorControlledResultListener(sourceRef: ActorRef)(implicit loader: OrientLoader) extends Actor {
+private class ActorControlledResultListener[A](sourceRef: ActorRef)(implicit loader: OrientLoader[A]) extends Actor {
   val signals = new AtomicLong(0L)
   val listener = new BlockingOCommandResultListener(sourceRef, signals)
 

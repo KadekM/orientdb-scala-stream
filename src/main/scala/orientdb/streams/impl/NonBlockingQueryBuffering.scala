@@ -19,7 +19,7 @@ private[streams] class NonBlockingQueryBuffering[A: ClassTag](query: String,
   arguments: scala.collection.immutable.Map[Object, Object])
     extends NonBlockingQuery[A] {
 
-  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader): Publisher[A] = {
+  def execute[B](args: AnyRef*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader[B]): Publisher[B] = {
     val sourceRef = system.actorOf(Props(new ActorSourceBuffering[A]))
     val listener = createListener(sourceRef)
     val oQuery = SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments, listener)
@@ -28,13 +28,13 @@ private[streams] class NonBlockingQueryBuffering[A: ClassTag](query: String,
     future.onFailure { case t: Throwable ⇒ sourceRef ! ErrorOccurred(t) }
     future.onSuccess { case _ ⇒ sourceRef ! Complete }
 
-    ActorPublisher[A](sourceRef)
+    ActorPublisher[B](sourceRef)
   }
 
-  private def createListener(ref: ActorRef)(implicit loader: OrientLoader) = new OCommandResultListener {
+  private def createListener[B](ref: ActorRef)(implicit loader: OrientLoader[B]) = new OCommandResultListener {
     override def result(iRecord: Any): Boolean = {
-      ref ! Enqueue(iRecord)
-      loader(iRecord.asInstanceOf[ODocument]) // todo types
+      val casted = iRecord.asInstanceOf[ODocument]
+      ref ! Enqueue(loader(casted))
       true
     }
 

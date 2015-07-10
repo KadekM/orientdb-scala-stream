@@ -3,12 +3,19 @@ package orientdb.streams
 import com.orientechnologies.orient.core.record.impl.ODocument
 
 // todo: parent of orientdbs' stuff, generalize?
-trait OrientLoader extends ((ODocument) ⇒ Unit)
+trait OrientLoader[A] extends ((ODocument) ⇒ A)
 
-private class OrientLoaderDeserializing extends OrientLoader {
-  override def apply(x: ODocument): Unit = x.deserializeFields()
-}
 object OrientLoaderDeserializing {
-  def apply(): OrientLoader = new OrientLoaderDeserializing
+  def apply(fields: String*): OrientLoader[ODocument] = new OrientLoader[ODocument] {
+    override def apply(v1: ODocument): ODocument = {
+      v1.deserializeFields(fields: _*)
+      v1
+    }
+  }
 }
-// TODO: deserializers only for some fields
+
+object OrientLoaderIdentity {
+  def apply(): OrientLoader[ODocument] = new OrientLoader[ODocument] {
+    override def apply(v1: ODocument): ODocument = v1
+  }
+}

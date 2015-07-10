@@ -10,7 +10,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLAsynchQuery
 import org.scalatest.{Matchers, WordSpecLike}
-import orientdb.streams.{OrientLoaderDeserializing, NonBlockingQueryBackpressuring}
+import orientdb.streams.{OrientLoaderIdentity, OrientLoaderDeserializing, NonBlockingQueryBackpressuring}
 
 // just playground
 class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
@@ -21,6 +21,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
   implicit val loader = OrientLoaderDeserializing()
+  //implicit val loader = OrientLoaderIdentity()
 
   /*
   val amountOfRecords = 1000
@@ -49,7 +50,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
 
   val oldStyleListener = new OCommandResultListener {
     override def result(iRecord: scala.Any): Boolean = {
-      println("old", iRecord)
+      //println(iRecord)
       true
     }
     override def end(): Unit = {}
@@ -66,11 +67,11 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
       val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name")
 
       println("starting")
-      Source(query.execute()).runForeach { x ⇒
-
+      Source(query.execute()).filter(_.field("surname").toString.contains("8")).runForeach(println)
+      /*Source(query.execute()).runForeach { x ⇒
         //db.activateOnCurrentThread()
-        println(x)
-      }
+        println(x, Thread.currentThread.getId)
+      }*/
 
       //val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
       //src.request(10000)

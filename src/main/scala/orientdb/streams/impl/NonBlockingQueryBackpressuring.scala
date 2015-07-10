@@ -24,10 +24,10 @@ private[streams] class NonBlockingQueryBackpressuring[A: ClassTag](query: String
     fetchPlan: String,
     arguments: scala.collection.immutable.Map[Object, Object]) extends NonBlockingQuery[A] {
 
-  override def execute(params: AnyRef*)(implicit db: ODatabaseDocumentTx,
+  override def execute[B](params: AnyRef*)(implicit db: ODatabaseDocumentTx,
     system: ActorSystem,
     ec: ExecutionContext,
-    loader: OrientLoader): Publisher[A] = {
+    loader: OrientLoader[B]): Publisher[B] = {
 
     implicit val timeout = Timeout(3.seconds) // TODO timeout from outside
     val sourceRef = system.actorOf(Props(new ActorSourceWithListener[A]))
@@ -46,6 +46,6 @@ private[streams] class NonBlockingQueryBackpressuring[A: ClassTag](query: String
       future.onSuccess { case _ ⇒ sourceRef ! Complete }
     }).onFailure(handleErrorAtSource)
 
-    ActorPublisher[A](sourceRef)
+    ActorPublisher[B](sourceRef)
   }
 }
