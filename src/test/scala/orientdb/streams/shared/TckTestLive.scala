@@ -28,7 +28,6 @@ abstract class TckTestLive extends PublisherVerification[LiveQueryData](new Test
 
   override def createPublisher(elements: Long): Publisher[LiveQueryData] = {
     beforeEachPublisher()
-    println("starting for leements", elements)
     val query = // LIMIT cant be <= 0, so we just return empty set
       if (elements <= 0) LiveQuery(s"LIVE SELECT FROM DataTable WHERE name='IDontExist'")
       else {
@@ -46,7 +45,7 @@ abstract class TckTestLive extends PublisherVerification[LiveQueryData](new Test
   }
 
   override def createFailedPublisher(): Publisher[LiveQueryData] = {
-    null
+    LiveQuery(s"LV SL FROM DataTable").execute()
   }
 
   override def maxElementsFromPublisher(): Long = publisherUnableToSignalOnComplete()
