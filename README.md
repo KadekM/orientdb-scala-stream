@@ -11,11 +11,11 @@ Supported
 - Parametrized query execution
 
 ### Non blocking queries
-```scala
+```scalar
 val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person")
 val src = Source(query.execute())
 ```
-This will backpressure the databse - if there is no demand from downstream, database won't perform the fetch. Cancelling subscription will stop database from fetching next wors. 
+This will backpressure the databse - if there is no demand from downstream, database won't perform the fetch. Cancelling subscription will stop database from fetching next rows. 
 
 ```scala
 val query = NonBlockingQueryBuffering[ODocument]("SELECT * FROM Person")
