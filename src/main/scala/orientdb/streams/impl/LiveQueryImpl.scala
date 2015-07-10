@@ -13,7 +13,7 @@ import orientdb.streams.impl.ActorSourceLiveQuery.{Enqueue, TokenFound}
 
 private[streams] class LiveQueryImpl(query: String)(implicit system: ActorSystem) extends LiveQuery {
   def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx): Publisher[LiveQueryData] = {
-    val actorRef = system.actorOf(Props(new ActorSourceLiveQuery))
+    val actorRef = system.actorOf(Props(new ActorSourceLiveQuery(db)))
 
     val listener = new OLiveResultListener {
       override def onLiveResult(iLiveToken: Int, iOp: ORecordOperation): Unit = {

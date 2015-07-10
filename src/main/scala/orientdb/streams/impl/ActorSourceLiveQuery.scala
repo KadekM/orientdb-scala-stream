@@ -2,6 +2,8 @@ package orientdb.streams.impl
 
 import akka.actor._
 import akka.stream.actor.ActorPublisher
+import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
+import com.orientechnologies.orient.core.sql.OCommandSQL
 import orientdb.streams.impl.ActorSourceLiveQuery.WaitingForToken
 import orientdb.streams.{LiveQueryData, LiveQueryDataWithToken}
 import ActorSourceLiveQuery._
@@ -25,7 +27,10 @@ object ActorSourceLiveQuery {
 }
 
 // todo: maybe add generality
-private[impl] class ActorSourceLiveQuery extends FSM[State, Data] with ActorPublisher[LiveQueryData] {
+private[impl] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
+  extends FSM[State, Data] with ActorPublisher[LiveQueryData] {
+  val dbCopy = db.copy() // TODO*: maybe we can send command instead of token and execute that?
+
   import akka.stream.actor.ActorPublisherMessage._
   startWith(WaitingForToken, Queue(Vector.empty[LiveQueryData]))
 
@@ -72,9 +77,10 @@ private[impl] class ActorSourceLiveQuery extends FSM[State, Data] with ActorPubl
     case Event(ErrorOccurred(t), _) ⇒
       stay
 
-    case Event(Cancel, _) ⇒
-      println("unsubscribing")
-      //UNSUBSCRIBE
+    case Event(Cancel, queue: QueueWithToken) ⇒
+      //todo: this sucks incredibly... can we do better ?
+      dbCopy.activateOnCurrentThread()
+      dbCopy.command(new OCommandSQL(s"live unsubscribe ${queue.token}")).execute() // see *TODO
       stay
   }
 

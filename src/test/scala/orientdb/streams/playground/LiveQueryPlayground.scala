@@ -1,25 +1,18 @@
-package orientdb.streams
+package orientdb.streams.playground
 
-import java.awt.GraphicsConfigTemplate
-
-import akka.actor.{Props, Actor, ActorSystem}
+import akka.actor.{Actor, ActorSystem, Props}
 import akka.stream.ActorMaterializer
-import akka.stream.actor.{OneByOneRequestStrategy, RequestStrategy, ActorSubscriber, ActorPublisher}
-import akka.stream.actor.ActorPublisherMessage.Cancel
+import akka.stream.actor.{ActorSubscriber, OneByOneRequestStrategy, RequestStrategy}
 import akka.stream.scaladsl.{Sink, Source}
-import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
-import com.orientechnologies.orient.core.db.record.ORecordOperation
 import com.orientechnologies.orient.core.query.live.OLiveQueryHook
 import com.orientechnologies.orient.core.record.impl.ODocument
-import com.orientechnologies.orient.core.serialization.serializer.record.binary.ORecordSerializerBinary
-import com.orientechnologies.orient.core.sql.{OLiveCommandExecutorSQLFactory, OCommandSQL}
-import com.orientechnologies.orient.core.sql.query.{ OResultSet, OLiveQuery, OLiveResultListener }
-import org.reactivestreams.Subscriber
-import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
+import com.orientechnologies.orient.core.sql.{OCommandSQL, OLiveCommandExecutorSQLFactory}
+import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
+import orientdb.streams.{LiveQuery, OrientLoaderDeserializing}
 
-class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
+class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
     with WordSpecLike with Matchers with BeforeAndAfterAll {
 
   def this() = this(ActorSystem("test"))
