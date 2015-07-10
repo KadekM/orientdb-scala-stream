@@ -11,5 +11,5 @@ object ActorSource {
   case object Complete extends Event
 
   sealed trait Data
-  final case class Queue[A](xs: List[A]) extends Data
+  final case class Queue[A](xs: Vector[A]) extends Data
 }

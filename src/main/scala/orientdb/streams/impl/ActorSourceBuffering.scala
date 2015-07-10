@@ -10,7 +10,7 @@ import scala.reflect.ClassTag
 private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] with ActorPublisher[A] {
   import akka.stream.actor.ActorPublisherMessage._
 
-  startWith(Ready, Queue(List.empty[A]))
+  startWith(Ready, Queue(Vector.empty[A]))
 
   when(Ready) {
     case Event(Enqueue(x: A), queue: Queue[A]) ⇒
@@ -31,7 +31,7 @@ private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] w
     case Event(Request(demand), queue: Queue[A]) ⇒
       if (demand > queue.xs.length) {
         queue.xs.foreach(onNext)
-        stay using Queue[A](List.empty[A])
+        stay using Queue[A](Vector.empty[A])
       } else {
         val (send, rest) = queue.xs.splitAt(demand.toInt)
         send.foreach(onNext)

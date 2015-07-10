@@ -10,6 +10,9 @@ import com.orientechnologies.orient.core.record.impl.ODocument
 import org.scalatest.{Matchers, WordSpecLike}
 import orientdb.streams.{OrientLoaderDeserializing, NonBlockingQueryBackpressuring, NonBlockingQueryBuffering, NonBlockingQuery}
 
+import scala.concurrent.Await
+import scala.concurrent.duration._
+import scala.concurrent.duration.Duration
 import scala.reflect.ClassTag
 
 
@@ -62,12 +65,12 @@ abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_sy
         val query = {
           NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name")
         }
-        val src =  {
-          Source(query.execute()).runWith(TestSink.probe[ODocument])
-        }
-        {
-          src.request(1)
-        }
+        val src = Source(query.execute()).map(x => 1).runFold(0)(_+_)
+
+        val r = Await.result(src, 100.seconds)
+
+        println(r)
+
       }
     }
   }

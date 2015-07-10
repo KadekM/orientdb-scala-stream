@@ -12,6 +12,8 @@ import com.orientechnologies.orient.core.sql.query.OSQLAsynchQuery
 import org.scalatest.{Matchers, WordSpecLike}
 import orientdb.streams.{OrientLoaderDeserializing, NonBlockingQueryBackpressuring}
 
+import scala.util.Try
+
 // just playground
 class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
   def this() = this(ActorSystem("remote-instance-tests"))
@@ -66,12 +68,9 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
       val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name")
 
       println("starting")
-      Source(query.execute()).runForeach { x ⇒
+        //.map(_.field("name"))
 
-        //db.activateOnCurrentThread()
-        println(x)
-      }
-
+      Source(query.execute()).runForeach(println)
       //val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
       //src.request(10000)
       Thread.sleep(1000)
