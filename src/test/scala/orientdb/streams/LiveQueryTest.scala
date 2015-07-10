@@ -52,12 +52,15 @@ class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
 
   class ActorSink extends Actor with ActorSubscriber {
     import akka.stream.actor.ActorSubscriberMessage._
-    var count = 0L
+    var count = 1L
     def receive = {
       case OnNext(t) =>
-        println("ne")
+        println(t)
         count += 1
-        if (count == 3) sender() ! Cancel
+        if (count == 3) {
+          println("canceling")
+         cancel()
+        }
     }
 
     override protected def requestStrategy: RequestStrategy = OneByOneRequestStrategy
@@ -69,7 +72,7 @@ class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
       val query = LiveQuery("LIVE SELECT FROM Person")
       val qe = query.execute()
       val actorSink = system.actorOf(Props(new ActorSink))
-      //Source(qe).runWith(Sink(ActorSubscriber(actorSink)))
+      Source(qe).runWith(Sink(ActorSubscriber(actorSink)))
 
       for (i <- 1 to 4) {
         println("inserting")

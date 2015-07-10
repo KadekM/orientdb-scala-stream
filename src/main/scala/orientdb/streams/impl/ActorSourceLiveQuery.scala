@@ -62,11 +62,11 @@ private[impl] class ActorSourceLiveQuery extends FSM[State, Data] with ActorPubl
     case Event(Request(demand), queue: QueueWithToken) ⇒
       if (demand > queue.xs.length) {
         queue.xs.foreach(onNext)
-        stay using Queue(Vector.empty[LiveQueryData])
+        stay using QueueWithToken(Vector.empty[LiveQueryData], queue.token)
       } else {
         val (send, rest) = queue.xs.splitAt(demand.toInt)
         send.foreach(onNext)
-        stay using Queue(rest)
+        stay using QueueWithToken(rest, queue.token)
       }
 
     case Event(ErrorOccurred(t), _) ⇒
