@@ -25,6 +25,6 @@ private[streams] class LiveQueryImpl(query: String)(implicit system: ActorSystem
     val token: Integer = reply.get(0).field("token") // from orientdb documentation
     actorRef ! TokenFound(token)
 
-    ActorPublisher[LiveQueryData](actorRef)
+   ActorPublisher[LiveQueryData](actorRef)
   }
 }

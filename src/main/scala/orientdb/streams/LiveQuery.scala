@@ -1,6 +1,7 @@
 package orientdb.streams
 
 import akka.actor.ActorSystem
+import akka.stream.actor.ActorPublisher
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import org.reactivestreams.Publisher
 import orientdb.streams.impl._

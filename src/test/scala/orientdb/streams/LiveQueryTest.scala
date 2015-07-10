@@ -1,8 +1,12 @@
 package orientdb.streams
 
-import akka.actor.ActorSystem
+import java.awt.GraphicsConfigTemplate
+
+import akka.actor.{Props, Actor, ActorSystem}
 import akka.stream.ActorMaterializer
-import akka.stream.scaladsl.Source
+import akka.stream.actor.{OneByOneRequestStrategy, RequestStrategy, ActorSubscriber, ActorPublisher}
+import akka.stream.actor.ActorPublisherMessage.Cancel
+import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
@@ -12,6 +16,7 @@ import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.serialization.serializer.record.binary.ORecordSerializerBinary
 import com.orientechnologies.orient.core.sql.{OLiveCommandExecutorSQLFactory, OCommandSQL}
 import com.orientechnologies.orient.core.sql.query.{ OResultSet, OLiveQuery, OLiveResultListener }
+import org.reactivestreams.Subscriber
 import org.scalatest.{ BeforeAndAfterAll, Matchers, WordSpecLike }
 
 class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
@@ -45,32 +50,34 @@ class LiveQueryTest(_system: ActorSystem) extends TestKit(_system)
 
   implicit val materializer = ActorMaterializer()
 
+  class ActorSink extends Actor with ActorSubscriber {
+    import akka.stream.actor.ActorSubscriberMessage._
+    var count = 0L
+    def receive = {
+      case OnNext(t) =>
+        println("ne")
+        count += 1
+        if (count == 3) sender() ! Cancel
+    }
+
+    override protected def requestStrategy: RequestStrategy = OneByOneRequestStrategy
+  }
+
   // tests are TODO, naming and all
   "LiveQuery (TODO, not live queries do not work in RC4)" should {
     "playground, to be removed" in {
       val query = LiveQuery("LIVE SELECT FROM Person")
-      Source(query.execute()).runForeach(println)
-      db.command(new OCommandSQL("insert into Person set name = 'foo', surname = 'bar'")).execute()
+      val qe = query.execute()
+      val actorSink = system.actorOf(Props(new ActorSink))
+      //Source(qe).runWith(Sink(ActorSubscriber(actorSink)))
 
-
-/*      val listener = new OLiveResultListener {
-        override def onLiveResult(iLiveToken: Int, iOp: ORecordOperation): Unit = {
-          println("live tokeiiiin!", iLiveToken, iOp)
-        }
+      for (i <- 1 to 4) {
+        println("inserting")
+        db.command(new OCommandSQL("insert into Person set name = 'foo', surname = 'bar'")).execute()
+        Thread.sleep(1000)
       }
 
-      db.asInstanceOf[ODatabaseDocumentTx].setSerializer(new ORecordSerializerBinary)
-
-      val result: OResultSet[ODocument] = db.query(new OLiveQuery[ODocument]("live select from Person", listener))
-      println(result.get(0))
-
-      db.command(new OCommandSQL("insert into Person set name='foo', surname='bar'")).execute()
-      db.commit()
-
-      db.command(new OCommandSQL("update Person set name = 'baz' where surname = 'bar'")).execute()
-      db.commit()
-
- */     Thread.sleep(2000)
+      Thread.sleep(3000)
     }
 
     "inserting after live select" in {

@@ -30,33 +30,50 @@ private[impl] class ActorSourceLiveQuery extends FSM[State, Data] with ActorPubl
   startWith(WaitingForToken, Queue(Vector.empty[LiveQueryData]))
 
   when(WaitingForToken) {
-    case Event(Enqueue(LiveQueryDataWithToken(data, token)), queue: Queue) ⇒
-      goto(Ready) using QueueWithToken(queue.xs :+ data, token)
-
     case Event(TokenFound(token: Int), queue: Queue) ⇒
       goto(Ready) using QueueWithToken(queue.xs, token)
+
+    case Event(Enqueue(LiveQueryDataWithToken(data, token)), queue: Queue) ⇒
+      goto(Ready) using QueueWithToken(queue.xs :+ data, token)
 
     case Event(ErrorOccurred(t), _) ⇒
       onErrorThenStop(t)
       stay
 
     case Event(Request(demand), queue: Queue) ⇒
-      // TODO
       stay
 
     case Event(Cancel, _) ⇒
-      //TODO cant unsubscribe because no token yet received
+      // cant unsubscribe because no token yet received
       goto(Cancelled)
   }
 
   when(Ready) {
+    case Event(TokenFound(token: Int), _) ⇒
+      stay
+
     case Event(Enqueue(LiveQueryDataWithToken(data, token)), queue: QueueWithToken) ⇒
-      stay
+      if (totalDemand <= 0) stay using QueueWithToken(queue.xs :+ data, token)
+      else {
+        onNext(data)
+        stay
+      }
+
     case Event(Request(demand), queue: QueueWithToken) ⇒
-      stay
+      if (demand > queue.xs.length) {
+        queue.xs.foreach(onNext)
+        stay using Queue(Vector.empty[LiveQueryData])
+      } else {
+        val (send, rest) = queue.xs.splitAt(demand.toInt)
+        send.foreach(onNext)
+        stay using Queue(rest)
+      }
+
     case Event(ErrorOccurred(t), _) ⇒
       stay
+
     case Event(Cancel, _) ⇒
+      println("unsubscribing")
       //UNSUBSCRIBE
       stay
   }
