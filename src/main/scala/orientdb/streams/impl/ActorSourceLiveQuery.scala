@@ -5,7 +5,7 @@ import akka.stream.actor.ActorPublisher
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.sql.OCommandSQL
 import orientdb.streams.impl.ActorSourceLiveQuery.WaitingForToken
-import orientdb.streams.{LiveQueryData, LiveQueryDataWithToken}
+import orientdb.streams.{ LiveQueryData, LiveQueryDataWithToken }
 import ActorSourceLiveQuery._
 
 object ActorSourceLiveQuery {
@@ -28,8 +28,7 @@ object ActorSourceLiveQuery {
 
 // todo: maybe add generality
 private[impl] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
-  extends FSM[State, Data] with ActorPublisher[LiveQueryData] {
-  val dbCopy = db.copy() // TODO*: maybe we can send command instead of token and execute that?
+    extends FSM[State, Data] with ActorPublisher[LiveQueryData] {
 
   import akka.stream.actor.ActorPublisherMessage._
   startWith(WaitingForToken, Queue(Vector.empty[LiveQueryData]))
@@ -75,25 +74,40 @@ private[impl] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
       }
 
     case Event(ErrorOccurred(t), _) ⇒
+      onErrorThenStop(t)
       stay
 
     case Event(Cancel, queue: QueueWithToken) ⇒
-      //todo: this sucks incredibly... can we do better ?
-      dbCopy.activateOnCurrentThread()
-      dbCopy.command(new OCommandSQL(s"live unsubscribe ${queue.token}")).execute() // see *TODO
+      cancelDb(queue.token)
+      onCompleteThenStop()
       stay
   }
 
   when(Cancelled) { // we were cancelled - cancel as soon as you get token
     case Event(TokenFound(token: Int), _) ⇒
+      cancelDb(token)
+      onCompleteThenStop()
       stay
     case Event(Enqueue(LiveQueryDataWithToken(_, token)), _) ⇒
+      cancelDb(token)
+      onCompleteThenStop()
       stay
+
     case Event(ErrorOccurred(t), _) ⇒
       stay
+
     case Event(Request(_), _) ⇒
       stay
+
     case Event(Cancel, _) ⇒
       stay
+  }
+
+  //todo: this sucks incredibly... can we do better ?
+  private def cancelDb(token: Int): Unit = {
+    val dbCopy = db.copy() // TODO*: maybe we can send command instead of token and execute that?
+    dbCopy.activateOnCurrentThread()
+    dbCopy.command(new OCommandSQL(s"live unsubscribe ${token}")).execute() // see *TODO
+    dbCopy.close()
   }
 }

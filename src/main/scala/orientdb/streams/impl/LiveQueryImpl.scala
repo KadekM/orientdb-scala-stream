@@ -7,9 +7,8 @@ import com.orientechnologies.orient.core.db.record.ORecordOperation
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.{ OResultSet, OLiveQuery, OLiveResultListener }
 import org.reactivestreams.Publisher
-import orientdb.streams.impl.ActorSourceLiveQuery
-import orientdb.streams.{ LiveQueryDataWithToken, LiveQueryData, LiveQuery }
-import orientdb.streams.impl.ActorSourceLiveQuery.{Enqueue, TokenFound}
+import orientdb.streams.impl.ActorSourceLiveQuery.{TokenFound, Enqueue}
+import orientdb.streams.{LiveQueryDataWithToken, LiveQueryData, LiveQuery}
 
 private[streams] class LiveQueryImpl(query: String)(implicit system: ActorSystem) extends LiveQuery {
   def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx): Publisher[LiveQueryData] = {
