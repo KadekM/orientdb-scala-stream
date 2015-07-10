@@ -25,9 +25,10 @@ class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
   implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "test")
   //implicit val db = new ODatabaseDocumentTx(s"memory:mylittletest"); db.create()
   //db.activateOnCurrentThread()
-  //implicit val loader = OrientLoaderDeserializing();
+  implicit val loader = OrientLoaderDeserializing();
   //db.registerHook(new OLiveQueryHook(db))
   // db.open("root", "test")
+
 
   override def afterAll() = {
     TestKit.shutdownActorSystem(system)

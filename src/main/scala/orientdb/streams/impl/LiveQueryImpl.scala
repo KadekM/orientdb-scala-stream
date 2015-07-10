@@ -18,21 +18,23 @@ private[streams] class LiveQueryImpl(query: String)(implicit system: ActorSystem
 
     val listener = new OLiveResultListener {
       override def onLiveResult(iLiveToken: Int, iOp: ORecordOperation): Unit = {
-        // for some reason, thread which orientdb uses to call in listener doesn't
-        // have db active ? Bug?
-        if (!db.isActiveOnCurrentThread) db.activateOnCurrentThread
-        val casted = iOp.getRecord.asInstanceOf[ODocument]
+        Try {
+          // for some reason, thread which orientdb uses to call in listener doesn't
+          // have db active ? Bug?
+          if (!db.isActiveOnCurrentThread) db.activateOnCurrentThread
+          val casted = iOp.getRecord.asInstanceOf[ODocument]
 
-        loader(casted)
+          loader(casted)
 
-        val data = iOp.`type` match {
-          case 0 => Loaded(casted)
-          case 1 => Updated(casted)
-          case 2 => Deleted(casted)
-          case 3 => Created(casted)
-        }
+          val data = iOp.`type` match {
+            case 0 => Loaded(casted)
+            case 1 => Updated(casted)
+            case 2 => Deleted(casted)
+            case 3 => Created(casted)
+          }
 
-        actorRef ! Enqueue(LiveQueryDataWithToken(data, iLiveToken))
+          actorRef ! Enqueue(LiveQueryDataWithToken(data, iLiveToken))
+        }.recover { case t => actorRef ! ErrorOccurred(t) }.get // throw exc even on Orient
       }
     }
 
