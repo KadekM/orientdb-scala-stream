@@ -32,7 +32,10 @@ private class ActorSourceWithListener[A: ClassTag]() extends ActorPublisher[A] {
       if (isCanceled) {
         listenerRef ! Stop
       }
+      onCompleteThenStop()
 
+    case Cancel =>
+      listenerRef ! Stop
       onCompleteThenStop()
 
     case ErrorOccurred(t) ⇒
