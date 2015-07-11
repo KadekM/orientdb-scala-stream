@@ -18,7 +18,7 @@ object OverflowStrategy {
 
   /**
    * If the buffer is full, drop whole buffer
-   * x ~> [b u f f e r] becomes [5]
+   * x ~> [b u f f e r] becomes [x]
    */
   object DropBuffer extends OverflowStrategy
 
