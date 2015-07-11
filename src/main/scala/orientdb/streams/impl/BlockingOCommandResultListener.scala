@@ -1,18 +1,13 @@
 package orientdb.streams.impl
 
-import java.util.concurrent.Semaphore
 import java.util.concurrent.atomic.{ AtomicLong, AtomicBoolean }
 
 import akka.actor.ActorRef
-import com.orientechnologies.orient.core.Orient
 import com.orientechnologies.orient.core.command.OCommandResultListener
-import com.orientechnologies.orient.core.db.record.ORecordElement
 import com.orientechnologies.orient.core.record.impl.ODocument
 import orientdb.streams.OrientLoader
 import scala.concurrent.blocking
-import orientdb.streams.ActorSource.{ Complete, Enqueue }
-
-import scala.util.Try
+import orientdb.streams.ActorSource.Enqueue
 
 /*
  * OCommandResultListener that talks to ActorPublisher. The Actor handle ActorSource messages(events).
@@ -48,14 +43,15 @@ private[impl] class BlockingOCommandResultListener[A](sourceRef: ActorRef,
       signals.synchronized {
         while (signals.get() <= 0)
           signals.wait()
-
         signals.decrementAndGet()
+      } // this blocks until demand, and fetchMore might have been changed in meantime
 
-       val document = iRecord.asInstanceOf[ODocument]
+      if (fetchMore.get()) {
+        val document = iRecord.asInstanceOf[ODocument]
         loader(document)
         sourceRef ! Enqueue(document)
-      }
-      true
+        true
+      } else false
     } else false
   }
 
@@ -68,6 +64,6 @@ private[impl] class BlockingOCommandResultListener[A](sourceRef: ActorRef,
    * => sometimes you'd get Completed event even when problem occurred with your stream
    */
   override def end(): Unit = {
-      fetchMore.set(false)
+    fetchMore.set(false)
   }
 }
