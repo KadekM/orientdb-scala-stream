@@ -7,6 +7,7 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.reactivestreams.Publisher
 import orientdb.streams.ActorSource._
+import orientdb.streams.OverflowStrategy.OverflowStrategy
 import orientdb.streams.{OrientLoader, NonBlockingQuery}
 import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
 
@@ -16,11 +17,11 @@ import scala.reflect.ClassTag
 private[streams] class NonBlockingQueryBuffering[A: ClassTag](query: String,
   limit: Int,
   fetchPlan: String,
-  arguments: scala.collection.immutable.Map[Object, Object])
+  arguments: scala.collection.immutable.Map[Object, Object])(buffer: Int, overflowStrategy: OverflowStrategy)
     extends NonBlockingQuery[A] {
 
   def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader): Publisher[A] = {
-    val sourceRef = system.actorOf(Props(new ActorSourceBuffering[A]))
+    val sourceRef = system.actorOf(Props(new ActorSourceBuffering[A](buffer, overflowStrategy)))
     val listener = createListener(sourceRef)
     val oQuery = SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments, listener)
 

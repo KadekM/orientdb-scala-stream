@@ -3,6 +3,7 @@ package orientdb.streams
 import akka.actor.ActorSystem
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import org.reactivestreams.Publisher
+import orientdb.streams.OverflowStrategy.OverflowStrategy
 import orientdb.streams.impl._
 
 import scala.concurrent.ExecutionContext
@@ -34,8 +35,8 @@ object NonBlockingQueryBuffering {
   def apply[A: ClassTag](query: String,
     limit: Int = -1,
     fetchPlan: String = null,
-    args: Map[Object, Object] = Map.empty[Object, Object])(implicit system: ActorSystem) =
-    new NonBlockingQueryBuffering[A](query, limit, fetchPlan, args)
+    args: Map[Object, Object] = Map.empty[Object, Object])(bufferSize: Int, overflowStrategy: OverflowStrategy)(implicit system: ActorSystem) =
+    new NonBlockingQueryBuffering[A](query, limit, fetchPlan, args)(bufferSize, overflowStrategy)
 }
 
 /*
