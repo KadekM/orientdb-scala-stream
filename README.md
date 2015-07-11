@@ -7,10 +7,11 @@ _If you are missing functionality, or something doesn't work, please either rais
 Library that allows you to execute `non blocking queries` and `live queries` on database, and treat results as reactive stream.
 
 Supported
-- Nonblocking queries
-- Live queries (experimental - [OrientDB documentation](http://orientdb.com/docs/last/Live-Query.html#whats-next))
-- Named query execution
-- Parametrized query execution
+
+- [Live queries](#live-queries) (experimental - [OrientDB documentation](http://orientdb.com/docs/last/Live-Query.html#whats-next))
+- [Nonblocking queries](#non-blocking-queries)
+- [Named query execution](#non-blocking-queries)
+- [Parametrized query execution](#non-blocking-queries)
 
 ## Live queries
 [(OrientDB documentation)](http://orientdb.com/docs/last/Live-Query.html)
@@ -63,7 +64,13 @@ val src = Source(query.executeNamed("lookingFor" -> "Peter"))
 ```
 This will start the query on database, and results will be aggregated as database provides them. They will be pushed downstream accordingly to reactive-streams specification (based on demand...). Cancelling subscription will not stop db from finishing query, but elements will no longer be buffered.
 
-_TO BE ADDED: describe strategies to handle overflowing_
+### Overflow strategies
+Are almost identical to akka-streams strategies. Overflow happens when buffer is full and you receive a message. Overflow strategy decides what will happen next. You can understand the buffer as FIFO collection. Here are illustrations of supported strategies (on left is the oldest element, thus element which is supposed to be emmited on next demand). Suppose buffer size is 6:
+- DropHead: drops oldest in buffer    `x ~> [b u f f e r] becomes [u f f e r x]`
+- DropTail: drops youngest in buffer  `x ~> [b u f f e r] becomes [b u f f e x]`
+- DropBuffer: drops current buffer    `x ~> [b u f f e r] becomes [x]`
+- DropNew: drops incoming element     `x ~> [b u f f e r] becomes [b u f f e r`
+- Fail: emits error to stream         `x ~> [b u f f e r] emits   BufferOverflowException`
 
 ## Loader
 
