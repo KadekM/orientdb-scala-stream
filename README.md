@@ -4,11 +4,11 @@ _If you are missing functionality, or something doesn't work, please either rais
 
 ## Orientdb Scala Stream
 
-Library allows you to execute `non blocking queries` and `live queries` on database, and treat results as reactive stream.
+Library that allows you to execute `non blocking queries` and `live queries` on database, and treat results as reactive stream.
 
 Supported
 - Nonblocking queries
-- Live queries (experimental - [see OrientDB documentation](http://orientdb.com/docs/last/Live-Query.html#whats-next))
+- Live queries (experimental - [OrientDB documentation](http://orientdb.com/docs/last/Live-Query.html#whats-next))
 - Named query execution
 - Parametrized query execution
 
@@ -52,7 +52,8 @@ val src = Source(query.execute())
 This will backpressure the databse - if there is no demand from downstream, database won't perform the fetch. Cancelling subscription will stop database from fetching next rows. 
 
 ```scala
-val query = NonBlockingQueryBuffering[ODocument]("SELECT * FROM Person WHERE name = :lookingFor")
+val query =
+    NonBlockingQueryBuffering[ODocument]("SELECT * FROM Person WHERE name = :lookingFor")
 val src = Source(query.executeNamed("lookingFor" -> "Peter"))
           .map(myMethod)
           .filter(myFilter)
