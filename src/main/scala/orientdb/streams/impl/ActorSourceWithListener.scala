@@ -40,7 +40,7 @@ private class ActorSourceWithListener[A: ClassTag]() extends ActorPublisher[A] {
 
     case ErrorOccurred(t) ⇒
       listenerRef ! Stop
-      t.printStackTrace()
+      //t.printStackTrace()
       onErrorThenStop(t)
   }
 

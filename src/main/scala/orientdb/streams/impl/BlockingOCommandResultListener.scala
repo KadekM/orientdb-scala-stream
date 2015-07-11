@@ -51,10 +51,9 @@ private[impl] class BlockingOCommandResultListener[A](sourceRef: ActorRef,
 
         signals.decrementAndGet()
 
-       val x: ODocument = iRecord.asInstanceOf[ODocument]
-        loader(x)
-        //x.setLazyLoad(false)
-        sourceRef ! Enqueue(x)
+       val document = iRecord.asInstanceOf[ODocument]
+        loader(document)
+        sourceRef ! Enqueue(document)
       }
       true
     } else false
