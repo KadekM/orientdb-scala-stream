@@ -30,7 +30,7 @@ object OverflowStrategy {
 
   /**
    * If the buffer is full, fail the stream
-   * x ~> [b u f f e r] becomes BufferOverflowException
+   * x ~> [b u f f e r] emits BufferOverflowException
    */
   object Fail extends OverflowStrategy
 
