@@ -7,7 +7,7 @@ import com.orientechnologies.orient.core.db.record.ORecordOperation
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.{ OResultSet, OLiveQuery, OLiveResultListener }
 import org.reactivestreams.Publisher
-import orientdb.streams.impl.ActorSourceLiveQuery.{ErrorOccurred, TokenFound, Enqueue}
+import orientdb.streams.impl.ActorSourceLiveQuery.{ ErrorOccurred, TokenFound, Enqueue }
 import orientdb.streams._
 
 import scala.util.Try
@@ -22,19 +22,19 @@ private[streams] class LiveQueryImpl(query: String)(implicit system: ActorSystem
           // for some reason, thread which orientdb uses to call in listener doesn't
           // have db active ? Bug?
           if (!db.isActiveOnCurrentThread) db.activateOnCurrentThread
-          val casted = iOp.getRecord.asInstanceOf[ODocument]
-
-          loader(casted)
-
-          val data = iOp.`type` match {
-            case 0 => Loaded(casted)
-            case 1 => Updated(casted)
-            case 2 => Deleted(casted)
-            case 3 => Created(casted)
+          val data = iOp.getRecord match {
+            case document: ODocument ⇒
+              loader(document)
+              iOp.`type` match {
+                case 0 ⇒ Loaded(document)
+                case 1 ⇒ Updated(document)
+                case 2 ⇒ Deleted(document)
+                case 3 ⇒ Created(document)
+              }
           }
 
           actorRef ! Enqueue(LiveQueryDataWithToken(data, iLiveToken))
-        }.recover { case t => actorRef ! ErrorOccurred(t) }.get // throw exc even on Orient
+        }.recover { case t ⇒ actorRef ! ErrorOccurred(t) }.get // throw exc even on Orient
       }
     }
 
@@ -46,7 +46,7 @@ private[streams] class LiveQueryImpl(query: String)(implicit system: ActorSystem
       val reply: OResultSet[ODocument] = db.query(new OLiveQuery[ODocument](query, listener), args: _*)
       val token: Integer = reply.get(0).field("token") // from orientdb documentation
       actorRef ! TokenFound(token)
-    }.recover { case t => actorRef ! ErrorOccurred(t) }
-   ActorPublisher[LiveQueryData](actorRef)
+    }.recover { case t ⇒ actorRef ! ErrorOccurred(t) }
+    ActorPublisher[LiveQueryData](actorRef)
   }
 }
