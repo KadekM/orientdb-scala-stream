@@ -35,7 +35,6 @@ private[impl] class BlockingOCommandResultListener[A](sourceRef: ActorRef,
   }
 
   def isFinished = !fetchMore.get()
-  var wasDemand = false
 
   // this is called by db thread
   override def result(iRecord: Any): Boolean = blocking {
