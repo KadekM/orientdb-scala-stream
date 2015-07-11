@@ -6,7 +6,7 @@ object OverflowStrategy {
 
   /**
    * If the buffer is full, drop oldest element
-   * x ~> [b u f f e r] becomes [x u f f e r]
+   * x ~> [b u f f e r] becomes [u f f e r x]
    */
   object DropHead extends OverflowStrategy
 

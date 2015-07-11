@@ -27,7 +27,6 @@ private[impl] class ActorSourceBuffering[A: ClassTag](bufferSize: Int, overflowS
               onErrorThenStop(new BufferOverflowException(s"Buffer of size $bufferSize has overflown"))
               stay using Queue[A](Vector.empty[A])
           }
-          stay
         }
       } else {
         onNext(x)
