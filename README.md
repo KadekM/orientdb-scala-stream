@@ -55,6 +55,7 @@ This will backpressure the databse - if there is no demand from downstream, data
 val query = NonBlockingQueryBuffering[ODocument]
         (bufferSize = 1000, OverflowStrategy.DropHead)
         ("SELECT * FROM Person WHERE name = :lookingFor")
+        
 val src = Source(query.executeNamed("lookingFor" -> "Peter"))
           .map(myMethod)
           .filter(myFilter)
