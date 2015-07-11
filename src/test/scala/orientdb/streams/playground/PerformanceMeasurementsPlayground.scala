@@ -8,6 +8,7 @@ import akka.testkit.TestKit
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.scalatest.{ Matchers, WordSpecLike }
+import orientdb.streams.OverflowStrategy.Fail
 import orientdb.streams.{ OrientLoaderDeserializing, NonBlockingQueryBackpressuring, NonBlockingQueryBuffering, NonBlockingQuery }
 
 import scala.concurrent.Await
@@ -77,7 +78,7 @@ abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_sy
 class PerformanceMeasurementsBuffering(_system: ActorSystem) extends PerformanceMeasurements(_system) {
   def this() = this(ActorSystem("performance-non-blocking-query-buffering"))
   def name = "buffering"
-  override def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)
+  override def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](10000, Fail)(query)
 }
 
 class PerformanceMeasurementsBackpressuring(_system: ActorSystem) extends PerformanceMeasurements(_system) {

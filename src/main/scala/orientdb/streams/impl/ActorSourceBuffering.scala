@@ -5,17 +5,30 @@ import akka.stream.actor.ActorPublisher
 import orientdb.streams.ActorSource._
 
 import scala.reflect.ClassTag
+import orientdb.streams.OverflowStrategy._
 
-// todo: mechanism if it gets too big...
-private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] with ActorPublisher[A] {
+private[impl] class ActorSourceBuffering[A: ClassTag](bufferSize: Int, overflowStrategy: OverflowStrategy)
+    extends FSM[State, Data] with ActorPublisher[A] {
   import akka.stream.actor.ActorPublisherMessage._
 
   startWith(Ready, Queue(Vector.empty[A]))
 
   when(Ready) {
     case Event(Enqueue(x: A), queue: Queue[A]) ⇒
-      if (totalDemand <= 0) stay using Queue[A](queue.xs :+ x)
-      else {
+      if (totalDemand <= 0) {
+        if (queue.xs.length < bufferSize) stay using Queue[A](queue.xs :+ x)
+        else { // overflow strategies come to play
+          overflowStrategy match {
+            case DropHead   ⇒ stay using Queue[A](queue.xs.tail :+ x)
+            case DropTail   ⇒ stay using Queue[A](queue.xs.dropRight(1) :+ x)
+            case DropBuffer ⇒ stay using Queue[A](Vector[A](x))
+            case DropNew    ⇒ stay
+            case Fail       ⇒
+              onErrorThenStop(new BufferOverflowException(s"Buffer of size $bufferSize has overflown"))
+              stay using Queue[A](Vector.empty[A])
+          }
+        }
+      } else {
         onNext(x)
         stay
       }
@@ -40,7 +53,7 @@ private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] w
 
     case Event(ErrorOccurred(t), _) ⇒
       onErrorThenStop(t)
-      stay
+      stay using Queue[A](Vector.empty[A])
   }
 
   when(Completed) {
@@ -56,10 +69,10 @@ private[impl] class ActorSourceBuffering[A: ClassTag] extends FSM[State, Data] w
       }
     case Event(Cancel, _) ⇒
       onCompleteThenStop()
-      stay
+      stay using Queue[A](Vector.empty[A])
+
     case Event(ErrorOccurred(t), _) ⇒
-      t.printStackTrace()
-      stay
+      stay using Queue[A](Vector.empty[A])
   }
 }
 

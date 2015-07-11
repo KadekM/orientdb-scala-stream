@@ -3,6 +3,7 @@ package orientdb.streams
 import akka.actor.ActorSystem
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import org.reactivestreams.Publisher
+import orientdb.streams.OverflowStrategy.OverflowStrategy
 import orientdb.streams.impl._
 
 import scala.concurrent.ExecutionContext
@@ -31,11 +32,11 @@ trait NonBlockingQuery[A] {
  * If actor's buffer is too large, it will explode (TODO)
  */
 object NonBlockingQueryBuffering {
-  def apply[A: ClassTag](query: String,
+  def apply[A: ClassTag](bufferSize: Int, overflowStrategy: OverflowStrategy)(query: String,
     limit: Int = -1,
     fetchPlan: String = null,
     args: Map[Object, Object] = Map.empty[Object, Object])(implicit system: ActorSystem) =
-    new NonBlockingQueryBuffering[A](query, limit, fetchPlan, args)
+    new NonBlockingQueryBuffering[A](bufferSize, overflowStrategy)(query, limit, fetchPlan, args)
 }
 
 /*
