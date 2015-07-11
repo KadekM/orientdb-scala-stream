@@ -12,7 +12,7 @@ import orientdb.streams.{ OrientLoaderDeserializing, NonBlockingQueryBuffering, 
 import scala.reflect.ClassTag
 
 abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironment() {
-  override def defaultTimeoutMillis(): Long = 200L
+  override def defaultTimeoutMillis(): Long = 600L
 }) with TestNGSuiteLike with TestKitBase {
 
   protected val uuid = java.util.UUID.randomUUID.toString
