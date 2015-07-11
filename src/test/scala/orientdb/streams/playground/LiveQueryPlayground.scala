@@ -69,7 +69,7 @@ class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
       val listener = new OLiveResultListener {
         override def onLiveResult(iLiveToken: Int, iOp: ORecordOperation): Unit = {
           if (!db.isActiveOnCurrentThread) db.activateOnCurrentThread
-          println(iOp, Thread.currentThread.getId)
+         // println(iOp, Thread.currentThread.getId)
         }
       }
 

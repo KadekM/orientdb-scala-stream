@@ -51,7 +51,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
 
   val oldStyleListener = new OCommandResultListener {
     override def result(iRecord: scala.Any): Boolean = {
-      println("old", iRecord)
+      //println("old", iRecord)
       true
     }
     override def end(): Unit = {}

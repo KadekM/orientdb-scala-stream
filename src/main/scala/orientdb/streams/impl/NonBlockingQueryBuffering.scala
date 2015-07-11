@@ -14,10 +14,10 @@ import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
 import scala.concurrent.{ ExecutionContext, Future }
 import scala.reflect.ClassTag
 
-private[streams] class NonBlockingQueryBuffering[A: ClassTag](query: String,
+private[streams] class NonBlockingQueryBuffering[A: ClassTag](buffer: Int, overflowStrategy: OverflowStrategy)(query: String,
   limit: Int,
   fetchPlan: String,
-  arguments: scala.collection.immutable.Map[Object, Object])(buffer: Int, overflowStrategy: OverflowStrategy)
+  arguments: scala.collection.immutable.Map[Object, Object])
     extends NonBlockingQuery[A] {
 
   def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader): Publisher[A] = {

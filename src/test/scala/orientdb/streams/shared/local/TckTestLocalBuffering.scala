@@ -7,5 +7,5 @@ import orientdb.streams.shared.InMemoryTckTest
 import scala.reflect.ClassTag
 
 class TckTestLocalBuffering extends InMemoryTckTest {
-  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](query)(10000, Fail)
+  def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A] = NonBlockingQueryBuffering[A](10000, Fail)(query)
 }

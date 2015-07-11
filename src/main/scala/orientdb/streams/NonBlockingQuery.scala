@@ -32,11 +32,11 @@ trait NonBlockingQuery[A] {
  * If actor's buffer is too large, it will explode (TODO)
  */
 object NonBlockingQueryBuffering {
-  def apply[A: ClassTag](query: String,
+  def apply[A: ClassTag](bufferSize: Int, overflowStrategy: OverflowStrategy)(query: String,
     limit: Int = -1,
     fetchPlan: String = null,
-    args: Map[Object, Object] = Map.empty[Object, Object])(bufferSize: Int, overflowStrategy: OverflowStrategy)(implicit system: ActorSystem) =
-    new NonBlockingQueryBuffering[A](query, limit, fetchPlan, args)(bufferSize, overflowStrategy)
+    args: Map[Object, Object] = Map.empty[Object, Object])(implicit system: ActorSystem) =
+    new NonBlockingQueryBuffering[A](bufferSize, overflowStrategy)(query, limit, fetchPlan, args)
 }
 
 /*
