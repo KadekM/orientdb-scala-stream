@@ -1,6 +1,6 @@
 _Experimental library, let's see how it works._
 
-_If you are missing functionality, or something doesn't work, please either raise issue or make a PR. See info at bottom._
+_If you are missing functionality, or something doesn't work, please either raise issue or make a PR. [See info](#info) at bottom._
 
 ## Orientdb Scala Stream
 
@@ -8,7 +8,7 @@ Library allows you to execute `non blocking queries` and `live queries` on datab
 
 Supported
 - Nonblocking queries
-- Live queries (experimental - see OrientDb)
+- Live queries (experimental - [see OrientDB documentation](http://orientdb.com/docs/last/Live-Query.html#whats-next))
 - Named query execution
 - Parametrized query execution
 
@@ -38,10 +38,16 @@ The listener is automatically unsubscribed from OrientDB once subscription is ca
 
 ## Non blocking queries
 [(OrientDB documentation)](http://orientdb.com/docs/last/Document-Database.html#non-blocking-query-since-v21)
+
+There are two types of queries, both having some advantages and disadvantages:
+- backpressuring (db doesn't fetch more data than is demanded downstream)
+- buffering (db fetches data and fills buffer, even without demand, but sends it downstream accordingly)
+They have same interface, so you can exchange one for another, depending on your need.
+
 ```scala
 val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person")
 val src = Source(query.execute())
-          .runForeach(println) // prints all the results
+          .runForeach(println)
 ```
 This will backpressure the databse - if there is no demand from downstream, database won't perform the fetch. Cancelling subscription will stop database from fetching next rows. 
 
@@ -53,6 +59,8 @@ val src = Source(query.executeNamed("lookingFor" -> "Peter"))
           .runFold(...) 
 ```
 This will start the query on database, and results will be aggregated as database provides them. They will be pushed downstream accordingly to reactive-streams specification (based on demand...). Cancelling subscription will not stop db from finishing query, but elements will no longer be buffered.
+
+_TO BE ADDED: strategy to handle overflowing (dropping head, tail, etc...)_
 
 ## Loader
 
