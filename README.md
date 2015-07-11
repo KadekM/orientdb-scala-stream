@@ -82,3 +82,8 @@ Why does `Source(query.execute()).runForeach(println)` produce inconstitent stri
 
 ## Info
 This library is yet in very early stage. There are lots of TODOs, and often you may discover better way to implement something - feel free to raise issue or submit PR, I will very much welcome it.
+
+### Current TODOs
+- finish some tests and move them from playground to real tests
+- clean up tests, better setup and teardown logic, remote/local traits
+- incode TODOs
