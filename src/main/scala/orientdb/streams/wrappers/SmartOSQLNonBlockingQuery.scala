@@ -12,7 +12,7 @@ import com.orientechnologies.orient.core.sql.query.{ OResultSet, OSQLQuery }
 import scala.concurrent.{ Future, ExecutionContext }
 import scala.util.{ Success, Try }
 
-object SmartOSQLNonBlockingQuery {
+private[streams] object SmartOSQLNonBlockingQuery {
   OCommandManager.instance().registerExecutor(classOf[SmartOSQLNonBlockingQuery[_]], classOf[OCommandExecutorSQLDelegate])
 
   import collection.JavaConverters._
@@ -25,7 +25,7 @@ object SmartOSQLNonBlockingQuery {
 }
 // This class's execute reflect OSQLNonBlockingQuery's execute, except uses Scala's Future and
 // correctly propagates problems (future fails).
-private[wrappers] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec: ExecutionContext)
+private[streams] class SmartOSQLNonBlockingQuery[A](query: String)(implicit ec: ExecutionContext)
     extends OSQLQuery[A](query) with OCommandRequestAsynch {
 
   def this(query: String,
