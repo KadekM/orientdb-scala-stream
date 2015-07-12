@@ -43,10 +43,15 @@ The listener is automatically unsubscribed from OrientDB once subscription is ca
 There are two types of queries, both having some advantages and disadvantages:
 - Backpressuring (db doesn't fetch more data than is demanded downstream)
 - Buffering (db fetches data and fills buffer, even without demand, but sends it downstream accordingly)
-- 
+
 They have same interface, so you can exchange one for another, depending on your need.
 
 ```scala
+import orientdb.streams._
+
+implicit val db: ODatabaseDocumentTx = ???
+implicit val loader = OrientLoaderDeserializing()
+
 val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person")
 val src = Source(query.execute())
           .runForeach(println)
@@ -54,6 +59,11 @@ val src = Source(query.execute())
 This will backpressure the databse - if there is no demand from downstream, database won't perform the fetch. Cancelling subscription will stop database from fetching next rows. 
 
 ```scala
+import orientdb.streams._
+
+implicit val db: ODatabaseDocumentTx = ???
+implicit val loader = OrientLoaderDeserializing()
+
 val query = NonBlockingQueryBuffering[ODocument]
         (bufferSize = 1000, OverflowStrategy.DropHead)
         ("SELECT * FROM Person WHERE name = :lookingFor")
