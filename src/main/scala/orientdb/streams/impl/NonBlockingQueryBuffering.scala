@@ -6,7 +6,7 @@ import com.orientechnologies.orient.core.command._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import org.reactivestreams.Publisher
-import orientdb.streams.ActorSource._
+import ActorSource._
 import orientdb.streams.OverflowStrategy.OverflowStrategy
 import orientdb.streams.{OrientLoader, NonBlockingQuery}
 import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery

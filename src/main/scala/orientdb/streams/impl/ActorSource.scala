@@ -1,6 +1,6 @@
-package orientdb.streams
+package orientdb.streams.impl
 
-object ActorSource {
+private[streams] object ActorSource {
   sealed trait State
   case object Ready extends State
   case object Completed extends State

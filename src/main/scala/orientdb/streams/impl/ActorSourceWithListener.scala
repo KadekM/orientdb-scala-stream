@@ -3,19 +3,19 @@ package orientdb.streams.impl
 import akka.actor.ActorRef
 import akka.stream.actor.ActorPublisher
 import com.orientechnologies.orient.core.db.ODatabaseRecordThreadLocal
-import orientdb.streams.ActorSource.{ ErrorOccurred, Complete, Enqueue }
+import ActorSource.{ ErrorOccurred, Complete, Enqueue }
 import orientdb.streams.impl.ActorSourceWithListener.{ FinishedRegisteringListener, RegisterListener }
 import orientdb.streams.impl.ActorControlledResultListener.{ Stop, RequestedDemand }
 
 import scala.reflect.ClassTag
 
-private object ActorSourceWithListener {
+private[streams] object ActorSourceWithListener {
   sealed trait Message
   final case class RegisterListener(listenerRef: ActorRef) extends Message
   case object FinishedRegisteringListener extends Message
 }
 
-private class ActorSourceWithListener[A: ClassTag]() extends ActorPublisher[A] {
+private[streams] class ActorSourceWithListener[A: ClassTag]() extends ActorPublisher[A] {
   import akka.stream.actor.ActorPublisherMessage._
 
   def withListener(listenerRef: ActorRef): Receive = {

@@ -2,12 +2,12 @@ package orientdb.streams.impl
 
 import akka.actor.FSM
 import akka.stream.actor.ActorPublisher
-import orientdb.streams.ActorSource._
+import ActorSource._
 
 import scala.reflect.ClassTag
 import orientdb.streams.OverflowStrategy._
 
-private[impl] class ActorSourceBuffering[A: ClassTag](bufferSize: Int, overflowStrategy: OverflowStrategy)
+private[streams] class ActorSourceBuffering[A: ClassTag](bufferSize: Int, overflowStrategy: OverflowStrategy)
     extends FSM[State, Data] with ActorPublisher[A] {
   import akka.stream.actor.ActorPublisherMessage._
 

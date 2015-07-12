@@ -7,7 +7,7 @@ import com.orientechnologies.orient.core.command.OCommandResultListener
 import com.orientechnologies.orient.core.record.impl.ODocument
 import orientdb.streams.OrientLoader
 import scala.concurrent.blocking
-import orientdb.streams.ActorSource.Enqueue
+import ActorSource.Enqueue
 
 /*
  * OCommandResultListener that talks to ActorPublisher. The Actor handle ActorSource messages(events).
@@ -17,7 +17,7 @@ import orientdb.streams.ActorSource.Enqueue
  *
  * Sends messages to sourceRef when reads next record. Never sends Complete() [read end()]
  */
-private[impl] class BlockingOCommandResultListener[A](sourceRef: ActorRef,
+private[streams] class BlockingOCommandResultListener[A](sourceRef: ActorRef,
     signals: AtomicLong)(implicit loader: OrientLoader) extends OCommandResultListener {
   // shared among two threads
   private val fetchMore = new AtomicBoolean(true)

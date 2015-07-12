@@ -7,7 +7,7 @@ import akka.stream.scaladsl.{Sink, Source}
 import akka.stream.testkit.scaladsl.TestSink
 import akka.testkit.TestKit
 import org.scalatest._
-import orientdb.streams.ActorSource.Enqueue
+import ActorSource.Enqueue
 import orientdb.streams.OverflowStrategy
 import orientdb.streams.OverflowStrategy.OverflowStrategy
 

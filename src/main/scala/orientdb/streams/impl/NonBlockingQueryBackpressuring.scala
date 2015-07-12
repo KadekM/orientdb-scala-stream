@@ -7,7 +7,7 @@ import akka.util.Timeout
 import com.orientechnologies.orient.core.command.OCommandResultListener
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import org.reactivestreams.Publisher
-import orientdb.streams.ActorSource.{ Complete, ErrorOccurred }
+import ActorSource.{ Complete, ErrorOccurred }
 import orientdb.streams.{OrientLoader, NonBlockingQuery}
 import orientdb.streams.impl.ActorSourceWithListener.RegisterListener
 import orientdb.streams.impl.ActorControlledResultListener.GiveMeListener

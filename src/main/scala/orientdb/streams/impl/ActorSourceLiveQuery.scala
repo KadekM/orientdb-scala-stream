@@ -8,7 +8,7 @@ import orientdb.streams.impl.ActorSourceLiveQuery.WaitingForToken
 import orientdb.streams.{ LiveQueryData, LiveQueryDataWithToken }
 import ActorSourceLiveQuery._
 
-object ActorSourceLiveQuery {
+private[streams] object ActorSourceLiveQuery {
   sealed trait State
   case object WaitingForToken extends State
   case object Ready extends State
@@ -26,8 +26,7 @@ object ActorSourceLiveQuery {
   final case class QueueWithToken(xs: Vector[LiveQueryData], token: Int) extends Data
 }
 
-// todo: maybe add generality
-private[impl] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
+private[streams] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
     extends FSM[State, Data] with ActorPublisher[LiveQueryData] {
 
   import akka.stream.actor.ActorPublisherMessage._
@@ -83,7 +82,8 @@ private[impl] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
       stay
   }
 
-  when(Cancelled) { // we were cancelled - cancel as soon as you get token
+  when(Cancelled) {
+  // we were cancelled - cancel as soon as you get token
     case Event(TokenFound(token: Int), _) ⇒
       cancelDb(token)
       onCompleteThenStop()
@@ -103,11 +103,10 @@ private[impl] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
       stay
   }
 
-  //todo: this sucks incredibly... can we do better ?
+  //todo: can we do better ?
   private def cancelDb(token: Int): Unit = {
     val dbCopy = db.copy() // TODO*: maybe we can send command instead of token and execute that?
     dbCopy.activateOnCurrentThread()
     dbCopy.command(new OCommandSQL(s"live unsubscribe ${token}")).execute() // see *TODO
-    //dbCopy.close()
   }
 }
