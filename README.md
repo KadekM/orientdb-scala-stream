@@ -77,11 +77,14 @@ This will start the query on database, and results will be aggregated as databas
 
 ### Overflow strategies
 Are almost identical to akka-streams strategies. Overflow happens when buffer is full and you receive a message. Overflow strategy decides what will happen next. You can understand the buffer as FIFO collection. Here are illustrations of supported strategies (on left is the oldest element, thus element which is supposed to be emited on next demand). Suppose buffer size is 6:
-- DropHead: drops oldest in buffer    `x ~> [b u f f e r] becomes [u f f e r x]`
-- DropTail: drops youngest in buffer  `x ~> [b u f f e r] becomes [b u f f e x]`
-- DropBuffer: drops current buffer    `x ~> [b u f f e r] becomes [x]`
-- DropNew: drops incoming element     `x ~> [b u f f e r] becomes [b u f f e r`
-- Fail: emits error to stream         `x ~> [b u f f e r] emits   BufferOverflowException`
+
+| Strategy   | Description              | Buffer visualisation                                |
+| :--------- |:------------------------ | :-------------------------------------------------- |
+| DropHead   | drops oldest in buffer   | `x ~> [b u f f e r]` becomes `[u f f e r x]`        |
+| DropTail   | drops youngest in buffer | `x ~> [b u f f e r]` becomes `[b u f f e x]`        |
+| DropBuffer | drops current buffer     | `x ~> [b u f f e r]` becomes `[x]`                  | 
+| DropNew    | drops incoming element   | `x ~> [b u f f e r]` becomes `[b u f f e r]`        |
+| Fail       | emits error to stream    | `x ~> [b u f f e r]` emits `BufferOverflowException`|
 
 ## Loader
 
