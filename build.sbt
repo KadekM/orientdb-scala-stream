@@ -1,5 +1,9 @@
 name := "orientdb-scala-stream"
 
+licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0.html"))
+
+homepage := Some(url("https://github.com/KadekM/orientdb-scala-stream"))
+
 organization := "com.marekkadek"
 
 version := "0.2"
