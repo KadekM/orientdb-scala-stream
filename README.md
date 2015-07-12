@@ -41,8 +41,9 @@ The listener is automatically unsubscribed from OrientDB once subscription is ca
 [(OrientDB documentation)](http://orientdb.com/docs/last/Document-Database.html#non-blocking-query-since-v21)
 
 There are two types of queries, both having some advantages and disadvantages:
-- backpressuring (db doesn't fetch more data than is demanded downstream)
-- buffering (db fetches data and fills buffer, even without demand, but sends it downstream accordingly)
+- Backpressuring (db doesn't fetch more data than is demanded downstream)
+- Buffering (db fetches data and fills buffer, even without demand, but sends it downstream accordingly)
+- 
 They have same interface, so you can exchange one for another, depending on your need.
 
 ```scala
@@ -65,7 +66,7 @@ val src = Source(query.executeNamed("lookingFor" -> "Peter"))
 This will start the query on database, and results will be aggregated as database provides them. They will be pushed downstream accordingly to reactive-streams specification (based on demand...). Cancelling subscription will not stop db from finishing query, but elements will no longer be buffered.
 
 ### Overflow strategies
-Are almost identical to akka-streams strategies. Overflow happens when buffer is full and you receive a message. Overflow strategy decides what will happen next. You can understand the buffer as FIFO collection. Here are illustrations of supported strategies (on left is the oldest element, thus element which is supposed to be emmited on next demand). Suppose buffer size is 6:
+Are almost identical to akka-streams strategies. Overflow happens when buffer is full and you receive a message. Overflow strategy decides what will happen next. You can understand the buffer as FIFO collection. Here are illustrations of supported strategies (on left is the oldest element, thus element which is supposed to be emited on next demand). Suppose buffer size is 6:
 - DropHead: drops oldest in buffer    `x ~> [b u f f e r] becomes [u f f e r x]`
 - DropTail: drops youngest in buffer  `x ~> [b u f f e r] becomes [b u f f e x]`
 - DropBuffer: drops current buffer    `x ~> [b u f f e r] becomes [x]`
@@ -78,7 +79,7 @@ To execute the queries you need following implicit (beside the regular ones):
 ```scala
 implicit val loader = OrientLoaderDeserializing()
 ```
-Loader specified what to do with your entity before it is sent to the source of the stream (and thus possibly emmited downstreams). **It runs on thread which has database setup as ThreadLocal, so you can call methods which require it**. In stream operations, there is no such guarantee.
+Loader specified what to do with your entity before it is sent to the source of the stream (and thus possibly emitted downstreams). **It runs on thread which has database setup as ThreadLocal, so you can call methods which require it**. In stream operations, there is no such guarantee.
 You can implement your `OrientLoader`.
 
 **The way this works may change in future.**
