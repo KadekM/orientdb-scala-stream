@@ -94,7 +94,8 @@ Overflow strategies are almost identical to akka-streams strategies. Overflow ha
 You may decide you don't want any internal buffer - for example in LiveQueries, when you are interested in changes that happen only AFTER there is active demand from downstream
 
 ```scala
-val query = LiveQuery("LIVE SELECT FROM Person")
+val query = LiveQuery(bufferSize = 0, OverflowStrategy.DropNew)
+                     ("LIVE SELECT FROM Person")
 ```
 
 Since it's curried you can easily define your own LiveQuery without buffer, such as `LiveQueryInstant`. Currently it is not provided as standard (as I tried to keep as few interfaces as possible).
