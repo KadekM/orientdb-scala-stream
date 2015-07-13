@@ -2,7 +2,7 @@ _Experimental library, let's see how it works._
 
 _If you are missing functionality, or something doesn't work, please either raise issue or make a PR. [See info](#info) at bottom._
 
-## Orientdb Scala Stream
+## OrientDB Scala Stream
 
 Library that allows you to execute `non blocking queries` and `live queries` on database, and treat results as reactive stream.
 
@@ -23,7 +23,8 @@ import orientdb.streams._
 implicit val db: ODatabaseDocumentTx = ???
 implicit val loader = OrientLoaderDeserializing()
 
-val query = LiveQuery("LIVE SELECT FROM Person")
+val query = LiveQuery(bufferSize = 1000, OverflowStrategy.DropHead)
+                     ("LIVE SELECT FROM Person")
 Source(query.execute())
     .collect{ case Created(data) => data }
     .takeWhile(_.field("name").toString().contains("Pet"))
@@ -37,12 +38,14 @@ Once you execute live query you get notifications for following events as they a
 
 The listener is automatically unsubscribed from OrientDB once the subscription is cancelled (executing command `live unsubscribe TOKEN_VALUE`)
 
+Live queries have internal buffer (which is being filled by DB, for example, when there is no demand downstreams, but events keep happening on DB) which you configure during creation of query. [More here](#overflow-strategies).
+
 ## Non blocking queries
 [(OrientDB documentation)](http://orientdb.com/docs/last/Document-Database.html#non-blocking-query-since-v21)
 
 There are two types of queries, both having some advantages and disadvantages:
-- Backpressuring (db doesn't fetch more data than is demanded downstream)
-- Buffering (db fetches data and fills buffer, even without demand, but sends it downstream accordingly)
+- Backpressuring (DB doesn't fetch more data than is demanded downstream)
+- Buffering (DB fetches data and fills buffer, even without demand, but sends it downstream accordingly)
 
 They have same interface, so you can exchange one for another, depending on your need.
 
@@ -73,10 +76,12 @@ val src = Source(query.executeNamed("lookingFor" -> "Peter"))
           .filter(myFilter)
           .runFold(...) 
 ```
-This will start the query on database, and results will be aggregated as database provides them. They will be pushed downstream accordingly to reactive-streams specification (based on demand...). Cancelling subscription will not stop db from finishing query, but elements will no longer be buffered.
+This will start the query on database, and results will be aggregated as database provides them. They will be pushed downstream accordingly to reactive-streams specification (based on demand...). Cancelling subscription will not stop DB from finishing query, but elements will no longer be buffered.
 
-### Overflow strategies
-Are almost identical to akka-streams strategies. Overflow happens when buffer is full and you receive a message. Overflow strategy decides what will happen next. You can understand the buffer as FIFO collection. Here are illustrations of supported strategies (on left is the oldest element, thus element which is supposed to be emited on next demand). Suppose buffer size is 6:
+Buffering queries have internal buffer which you configure during creation of query. [More here](#overflow-strategies).
+
+## Overflow strategies
+Overflow strategies are almost identical to akka-streams strategies. Overflow happens when buffer is full and you receive a message. Overflow strategy decides what will happen next. You can understand the buffer as FIFO collection. Here are illustrations of supported strategies (on left is the oldest element, thus element which is supposed to be emited on next demand). Suppose buffer size is 6:
 
 | Strategy   | Description              | Buffer visualisation                                |
 | :--------- |:------------------------ | :-------------------------------------------------- |
