@@ -4,6 +4,7 @@ import akka.actor._
 import akka.stream.actor.ActorPublisher
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.sql.OCommandSQL
+import orientdb.streams.OverflowStrategy._
 import orientdb.streams.impl.ActorSourceLiveQuery.WaitingForToken
 import orientdb.streams.{ LiveQueryData, LiveQueryDataWithToken }
 import ActorSourceLiveQuery._
@@ -26,7 +27,7 @@ private[streams] object ActorSourceLiveQuery {
   final case class QueueWithToken(xs: Vector[LiveQueryData], token: Int) extends Data
 }
 
-private[streams] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
+private[streams] class ActorSourceLiveQuery(bufferSize: Int, overflowStrategy: OverflowStrategy)(db: ODatabaseDocumentTx)
     extends FSM[State, Data] with ActorPublisher[LiveQueryData] {
 
   import akka.stream.actor.ActorPublisherMessage._
@@ -37,7 +38,8 @@ private[streams] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
       goto(Ready) using QueueWithToken(queue.xs, token)
 
     case Event(Enqueue(LiveQueryDataWithToken(data, token)), queue: Queue) ⇒
-      goto(Ready) using QueueWithToken(queue.xs :+ data, token)
+      if (queue.xs.length < bufferSize) goto(Ready) using QueueWithToken(queue.xs :+ data, token)
+      else changeStateWithOverflow(goto(Ready), queue.xs, data, token)
 
     case Event(ErrorOccurred(t), _) ⇒
       onErrorThenStop(t)
@@ -56,8 +58,11 @@ private[streams] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
       stay
 
     case Event(Enqueue(LiveQueryDataWithToken(data, token)), queue: QueueWithToken) ⇒
-      if (totalDemand <= 0) stay using QueueWithToken(queue.xs :+ data, token)
-      else {
+      if (totalDemand <= 0) {
+        if (queue.xs.length < bufferSize) stay using QueueWithToken(queue.xs :+ data, token)
+        else changeStateWithOverflow(stay, queue.xs, data, token)
+      }
+        else {
         onNext(data)
         stay
       }
@@ -83,7 +88,7 @@ private[streams] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
   }
 
   when(Cancelled) {
-  // we were cancelled - cancel as soon as you get token
+    // we were cancelled - cancel as soon as you get token
     case Event(TokenFound(token: Int), _) ⇒
       cancelDb(token)
       onCompleteThenStop()
@@ -101,6 +106,16 @@ private[streams] class ActorSourceLiveQuery(db: ODatabaseDocumentTx)
 
     case Event(Cancel, _) ⇒
       stay
+  }
+
+  final private def changeStateWithOverflow(nextState: State, currentBuffer: Vector[LiveQueryData], newData: LiveQueryData, token: Int) = overflowStrategy match {
+    case DropHead   ⇒ nextState using QueueWithToken(currentBuffer.tail :+ newData, token)
+    case DropTail   ⇒ nextState using QueueWithToken(currentBuffer.dropRight(1) :+ newData, token)
+    case DropBuffer ⇒ nextState using QueueWithToken(Vector[LiveQueryData](newData), token)
+    case DropNew    ⇒ nextState
+    case Fail ⇒
+      onErrorThenStop(new BufferOverflowException(s"Buffer of size $bufferSize has overflown"))
+      stay using QueueWithToken(Vector.empty, token)
   }
 
   //todo: can we do better ?

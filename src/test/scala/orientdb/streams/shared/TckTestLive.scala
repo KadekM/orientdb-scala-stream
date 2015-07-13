@@ -9,12 +9,12 @@ import com.orientechnologies.orient.core.sql.{ OLiveCommandExecutorSQLFactory, O
 import org.reactivestreams.Publisher
 import org.reactivestreams.tck.{ PublisherVerification, TestEnvironment }
 import org.scalatest.testng.TestNGSuiteLike
-import orientdb.streams.{ LiveQueryData, LiveQuery, NonBlockingQuery, OrientLoaderDeserializing }
+import orientdb.streams._
 
 import scala.reflect.ClassTag
 
 abstract class TckTestLive extends PublisherVerification[LiveQueryData](new TestEnvironment() {
-  override def defaultTimeoutMillis(): Long = 200L
+  override def defaultTimeoutMillis(): Long = 600L
 }) with TestNGSuiteLike with TestKitBase {
 
   protected val uuid = java.util.UUID.randomUUID.toString
@@ -29,9 +29,9 @@ abstract class TckTestLive extends PublisherVerification[LiveQueryData](new Test
   override def createPublisher(elements: Long): Publisher[LiveQueryData] = {
     beforeEachPublisher()
     val query = // LIMIT cant be <= 0, so we just return empty set
-      if (elements <= 0) LiveQuery(s"LIVE SELECT FROM DataTable WHERE name='IDontExist'")
+      if (elements <= 0) LiveQuery(10000, OverflowStrategy.DropHead)("LIVE SELECT FROM DataTable WHERE name='IDontExist'")
       else {
-        LiveQuery(s"LIVE SELECT FROM DataTable")
+        LiveQuery(10000, OverflowStrategy.DropHead)("LIVE SELECT FROM DataTable")
       }
     val source = query.execute()
 
@@ -45,7 +45,7 @@ abstract class TckTestLive extends PublisherVerification[LiveQueryData](new Test
   }
 
   override def createFailedPublisher(): Publisher[LiveQueryData] = {
-    LiveQuery(s"LV SL FROM DataTable").execute()
+    LiveQuery(10000, OverflowStrategy.DropHead)(s"LV SL FROM DataTable").execute()
   }
 
   override def maxElementsFromPublisher(): Long = publisherUnableToSignalOnComplete()

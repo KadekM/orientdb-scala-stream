@@ -4,6 +4,7 @@ import akka.actor.ActorSystem
 import akka.stream.actor.ActorPublisher
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import org.reactivestreams.Publisher
+import orientdb.streams.OverflowStrategy.OverflowStrategy
 import orientdb.streams.impl._
 
 trait LiveQuery {
@@ -11,6 +12,6 @@ trait LiveQuery {
 }
 
 object LiveQuery {
-  def apply(query: String)(implicit system: ActorSystem): LiveQuery =
-    new LiveQueryImpl(query)
+  def apply(bufferSize: Int, overflowStrategy: OverflowStrategy)(query: String)(implicit system: ActorSystem): LiveQuery =
+    new LiveQueryImpl(bufferSize, overflowStrategy)(query)
 }

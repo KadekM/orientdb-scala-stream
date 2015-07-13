@@ -6,7 +6,7 @@ homepage := Some(url("https://github.com/KadekM/orientdb-scala-stream"))
 
 organization := "com.marekkadek"
 
-version := "0.2"
+version := "0.3"
 
 scalaVersion := "2.11.7"
 

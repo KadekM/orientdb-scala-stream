@@ -13,7 +13,7 @@ import com.orientechnologies.orient.core.sql.query.{OLocalLiveResultListener, OL
 import com.orientechnologies.orient.core.sql.{OCommandSQL, OLiveCommandExecutorSQLFactory}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import orientdb.streams.wrappers.SmartOSQLNonBlockingQuery
-import orientdb.streams.{LiveQuery, OrientLoaderDeserializing}
+import orientdb.streams.{OverflowStrategy, LiveQuery, OrientLoaderDeserializing}
 
 class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
     with WordSpecLike with Matchers with BeforeAndAfterAll {
@@ -85,7 +85,7 @@ class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
     }
 
     "playground, to be removed" in {
-      val query = LiveQuery("LIVE SELECT FROM Person")
+      val query = LiveQuery(10000, OverflowStrategy.DropHead)("LIVE SELECT FROM Person")
       val qe = query.execute()
       val actorSink = system.actorOf(Props(new ActorSink))
      Source(qe).runWith(Sink(ActorSubscriber(actorSink)))
