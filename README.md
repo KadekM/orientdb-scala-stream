@@ -59,7 +59,7 @@ val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person")
 val src = Source(query.execute())
           .runForeach(println)
 ```
-This will backpressure the databse - if there is no demand from downstream, database won't perform the fetch. Cancelling subscription will stop database from fetching next rows. 
+This will backpressure the databse - if there is no demand from downstream, database won't perform the fetch - thus non blocking queries have no need for internal buffer.Cancelling subscription will stop database from fetching next rows.
 
 ```scala
 import orientdb.streams._
