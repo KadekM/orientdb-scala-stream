@@ -99,7 +99,7 @@ val query = LiveQuery("LIVE SELECT FROM Person")
 
 Since it's curried you can easily define your own LiveQuery without buffer, such as `LiveQueryInstant`. Currently it is not provided as standard (as I tried to keep as few interfaces as possible).
 ```scala
-val query = LiveQueryInstant(bufferSize = 0, OverflowStrategy.DropNew)("LIVE SELECT FROM Person")
+val query = LiveQueryInstant("LIVE SELECT FROM Person")
 ```
 
 ## Loader
