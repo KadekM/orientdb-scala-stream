@@ -38,7 +38,7 @@ Once you execute live query you get notifications for following events as they a
 
 The listener is automatically unsubscribed from OrientDB once the subscription is cancelled (executing command `live unsubscribe TOKEN_VALUE`)
 
-Live queries have internal buffer (which is being filled by DB, for example, when there is no demand downstreams, but events keep happening on DB) which you configure during creation of query. [More here](#overflow-strategies).
+Live queries have internal buffer (which is being filled by DB, for example, when there is no demand downstreams, but events keep happening on DB) which you configure during creation of query. [Read here on overflow strategies and how to handle if you don't need/want any internal buffer](#overflow-strategies).
 
 ## Non blocking queries
 [(OrientDB documentation)](http://orientdb.com/docs/last/Document-Database.html#non-blocking-query-since-v21)
@@ -90,6 +90,17 @@ Overflow strategies are almost identical to akka-streams strategies. Overflow ha
 | DropBuffer | drops current buffer     | `x ~> [b u f f e r]` becomes `[x]`                  | 
 | DropNew    | drops incoming element   | `x ~> [b u f f e r]` becomes `[b u f f e r]`        |
 | Fail       | emits error to stream    | `x ~> [b u f f e r]` emits `BufferOverflowException`|
+
+You may decide you don't want any internal buffer - for example in LiveQueries, when you are interested in changes that happen only AFTER there is active demand from downstream
+
+```scala
+val query = LiveQuery("LIVE SELECT FROM Person")
+```
+
+Since it's curried you can easily define your own LiveQuery without buffer, such as `LiveQueryInstant`. Currently it is not provided as standard (as I tried to keep as few interfaces as possible).
+```scala
+val query = LiveQueryInstant(bufferSize = 0, OverflowStrategy.DropNew)("LIVE SELECT FROM Person")
+```
 
 ## Loader
 
