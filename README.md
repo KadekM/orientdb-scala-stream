@@ -35,7 +35,7 @@ Once you execute live query you get notifications for following events as they a
 - Deleted
 - Created
 
-The listener is automatically unsubscribed from OrientDB once subscription is cancelled (a command `live unsubscribe TOKEN_VALUE`)
+The listener is automatically unsubscribed from OrientDB once the subscription is cancelled (executing command `live unsubscribe TOKEN_VALUE`)
 
 ## Non blocking queries
 [(OrientDB documentation)](http://orientdb.com/docs/last/Document-Database.html#non-blocking-query-since-v21)
