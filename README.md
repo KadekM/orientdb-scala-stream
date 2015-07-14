@@ -14,9 +14,8 @@ Supported
 - [Parametrized query execution](#non-blocking-queries)
 
 If you're using SBT, add following to build.sbt:
-`
-libraryDependencies += "com.marekkadek" %% "orientdb-scala-stream" % "0.5"
-`
+
+`libraryDependencies += "com.marekkadek" %% "orientdb-scala-stream" % "0.5"`
 
 ## Live queries
 [(OrientDB documentation)](http://orientdb.com/docs/last/Live-Query.html)
