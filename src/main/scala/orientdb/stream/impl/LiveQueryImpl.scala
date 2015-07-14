@@ -1,6 +1,6 @@
 package orientdb.stream.impl
 
-import akka.actor.{ Props, ActorSystem }
+import akka.actor.{ActorRefFactory, Props, ActorSystem}
 import akka.stream.actor.ActorPublisher
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.db.record.ORecordOperation
@@ -13,9 +13,9 @@ import ActorSourceLiveQuery.{ ErrorOccurred, TokenFound, Enqueue }
 
 import scala.util.Try
 
-private[stream] class LiveQueryImpl(bufferSize: Int, overflowStrategy: OverflowStrategy)(query: String)(implicit system: ActorSystem) extends LiveQuery {
-  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, loader: OrientLoader): Publisher[LiveQueryData] = {
-    val actorRef = system.actorOf(Props(new ActorSourceLiveQuery(bufferSize, overflowStrategy)(db)))
+private[stream] class LiveQueryImpl(bufferSize: Int, overflowStrategy: OverflowStrategy)(query: String) extends LiveQuery {
+  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, actorRefFactory: ActorRefFactory, loader: OrientLoader): Publisher[LiveQueryData] = {
+    val actorRef = actorRefFactory.actorOf(Props(new ActorSourceLiveQuery(bufferSize, overflowStrategy)(db)))
 
     val listener = new OLiveResultListener {
       override def onLiveResult(iLiveToken: Int, iOp: ORecordOperation): Unit = {

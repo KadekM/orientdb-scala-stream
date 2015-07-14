@@ -1,6 +1,6 @@
 package orientdb.stream
 
-import akka.actor.ActorSystem
+import akka.actor.{ActorRefFactory, ActorSystem}
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import org.reactivestreams.Publisher
 import OverflowStrategy.OverflowStrategy
@@ -14,10 +14,10 @@ import scala.reflect.ClassTag
  */
 trait NonBlockingQuery[A] {
   import scala.collection.JavaConverters._
-  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader): Publisher[A]
-  def executePositional(args: String*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader): Publisher[A] =
+  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, actorRefFactory: ActorRefFactory, ec: ExecutionContext, loader: OrientLoader): Publisher[A]
+  def executePositional(args: String*)(implicit db: ODatabaseDocumentTx, actorRefFactory: ActorRefFactory, ec: ExecutionContext, loader: OrientLoader): Publisher[A] =
     execute(args: _*)
-  def executeNamed(args: Map[String, String])(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader): Publisher[A] =
+  def executeNamed(args: Map[String, String])(implicit db: ODatabaseDocumentTx, actorRefFactory: ActorRefFactory, ec: ExecutionContext, loader: OrientLoader): Publisher[A] =
     execute(args.asJava)
 }
 
@@ -35,7 +35,7 @@ object NonBlockingQueryBuffering {
   def apply[A: ClassTag](bufferSize: Int, overflowStrategy: OverflowStrategy)(query: String,
     limit: Int = -1,
     fetchPlan: String = null,
-    args: Map[Object, Object] = Map.empty[Object, Object])(implicit system: ActorSystem) =
+    args: Map[Object, Object] = Map.empty[Object, Object]) =
     new NonBlockingQueryBuffering[A](bufferSize, overflowStrategy)(query, limit, fetchPlan, args)
 }
 
@@ -50,6 +50,6 @@ object NonBlockingQueryBackpressuring {
   def apply[A: ClassTag](query: String,
     limit: Int = -1,
     fetchPlan: String = null,
-    args: Map[Object, Object] = Map.empty[Object, Object])(implicit system: ActorSystem) =
+    args: Map[Object, Object] = Map.empty[Object, Object]) =
     new NonBlockingQueryBackpressuring[A](query, limit, fetchPlan, args)
 }

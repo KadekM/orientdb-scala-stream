@@ -1,6 +1,6 @@
 package orientdb.stream.impl
 
-import akka.actor.{ ActorRef, ActorSystem, Props }
+import akka.actor.{ActorRefFactory, ActorRef, ActorSystem, Props}
 import akka.stream.actor.ActorPublisher
 import com.orientechnologies.orient.core.command._
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
@@ -22,8 +22,8 @@ private[stream] class NonBlockingQueryBuffering[A: ClassTag](buffer: Int, overfl
   arguments: scala.collection.immutable.Map[Object, Object])
     extends NonBlockingQuery[A] {
 
-  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, system: ActorSystem, ec: ExecutionContext, loader: OrientLoader): Publisher[A] = {
-    val sourceRef = system.actorOf(Props(new ActorSourceBuffering[A](buffer, overflowStrategy)))
+  def execute(args: AnyRef*)(implicit db: ODatabaseDocumentTx, actorRefFactory: ActorRefFactory, ec: ExecutionContext, loader: OrientLoader): Publisher[A] = {
+    val sourceRef = actorRefFactory.actorOf(Props(new ActorSourceBuffering[A](buffer, overflowStrategy)))
     val listener = createListener(sourceRef)
     val oQuery = SmartOSQLNonBlockingQuery[A](query, limit, fetchPlan, arguments, listener)
 

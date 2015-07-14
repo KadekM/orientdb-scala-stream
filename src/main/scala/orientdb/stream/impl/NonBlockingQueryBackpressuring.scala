@@ -8,7 +8,7 @@ import com.orientechnologies.orient.core.command.OCommandResultListener
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import org.reactivestreams.Publisher
 import ActorSource.{ Complete, ErrorOccurred }
-import orientdb.stream.{NonBlockingQuery, OrientLoader}
+import orientdb.stream.{ NonBlockingQuery, OrientLoader }
 import orientdb.stream.wrappers.SmartOSQLNonBlockingQuery
 import ActorSourceWithListener.RegisterListener
 import ActorControlledResultListener.GiveMeListener
@@ -17,21 +17,19 @@ import scala.concurrent.{ Future, ExecutionContext }
 import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
-
-
 private[stream] class NonBlockingQueryBackpressuring[A: ClassTag](query: String,
     limit: Int,
     fetchPlan: String,
     arguments: scala.collection.immutable.Map[Object, Object]) extends NonBlockingQuery[A] {
 
   override def execute(params: AnyRef*)(implicit db: ODatabaseDocumentTx,
-    system: ActorSystem,
+    actorRefFactory: ActorRefFactory,
     ec: ExecutionContext,
     loader: OrientLoader): Publisher[A] = {
 
     implicit val timeout = Timeout(3.seconds) // TODO timeout from outside
-    val sourceRef = system.actorOf(Props(new ActorSourceWithListener[A]))
-    val listenerRef = system.actorOf(Props(new ActorControlledResultListener(sourceRef)))
+    val sourceRef = actorRefFactory.actorOf(Props(new ActorSourceWithListener[A]))
+    val listenerRef = actorRefFactory.actorOf(Props(new ActorControlledResultListener(sourceRef)))
     def handleErrorAtSource: PartialFunction[Throwable, Unit] = { case t: Throwable ⇒ sourceRef ! ErrorOccurred(t) }
 
     (for {
