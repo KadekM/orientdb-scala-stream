@@ -6,16 +6,16 @@ homepage := Some(url("https://github.com/KadekM/orientdb-scala-stream"))
 
 organization := "com.marekkadek"
 
-version := "0.5"
+version := "0.5.1"
 
 scalaVersion := "2.11.7"
 
 libraryDependencies ++= Seq(
-  "com.typesafe.akka" % "akka-stream-experimental_2.11" % "1.0-RC4",
+  "com.typesafe.akka" %% "akka-stream-experimental" % "1.0",
   "com.orientechnologies" % "orientdb-server" % "2.1-rc5",
   "org.reactivestreams" % "reactive-streams-tck" % "1.0.0" % Test,
   "org.scalatest" %% "scalatest" % "2.2.4" % Test,
-  "com.typesafe.akka" % "akka-stream-testkit-experimental_2.11" % "1.0-RC4" % Test
+  "com.typesafe.akka" %% "akka-stream-testkit-experimental" % "1.0" % Test
 )
  
 scalacOptions ++= Seq(
