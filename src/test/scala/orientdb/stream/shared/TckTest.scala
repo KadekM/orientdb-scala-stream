@@ -21,12 +21,13 @@ abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironm
   implicit var db: ODatabaseDocumentTx = prepareDb() // TODO: ugly hack
   implicit val loader = OrientLoaderDeserializing()
 
+  override def maxElementsFromPublisher(): Long = Int.MaxValue/2
+
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
 
   implicit lazy val system = ActorSystem()
   implicit val ec = system.dispatcher
 
-  // TODO: maxElements!
   override def createPublisher(elements: Long): Publisher[ODocument] = {
     beforeEachPublisher()
     val query = // LIMIT cant be <= 0, so we just return empty set
@@ -68,7 +69,7 @@ abstract class RemoteTckTest extends TckTest {
 
   def prepareDb(): ODatabaseDocumentTx = {
     val db = new ODatabaseDocumentTx(s"remote:localhost/test")
-    db.open("root", "test")
+    db.open("root", "admin")
     db
   }
 }

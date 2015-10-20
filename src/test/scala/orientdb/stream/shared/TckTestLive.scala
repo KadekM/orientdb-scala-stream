@@ -73,8 +73,8 @@ class RemoteTckTestLive extends TckTestLive {
 
   def prepareDb(): ODatabaseDocumentTx = {
     val db = new ODatabaseDocumentTx(s"remote:localhost/test")
-    db.open("root", "test")
-    db.command(new OCommandSQL("DELETE FROM DataTable")).execute()
+    db.open("root", "admin")
+    //db.command(new OCommandSQL("DELETE FROM `DataTable`")).execute()
     val doc = new ODocument("DataTable")
     doc.field("key", s"value")
     doc.save()

@@ -20,7 +20,7 @@ class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
 
 
   //OLiveCommandExecutorSQLFactory.init()
-  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "test")
+  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "admin")
   //implicit val db = new ODatabaseDocumentTx(s"memory:mylittletest"); db.create()
   //db.activateOnCurrentThread()
   implicit val loader = OrientLoaderDeserializing();

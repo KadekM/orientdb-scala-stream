@@ -16,7 +16,7 @@ import orientdb.stream.{OrientLoaderDeserializing, NonBlockingQueryBackpressurin
 class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
   def this() = this(ActorSystem("remote-instance-tests"))
   val uuid = java.util.UUID.randomUUID.toString
-  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "test")
+  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "admin")
   //implicit val db = new ODatabaseDocumentTx(s"memory:test$uuid");db.create()
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher
@@ -74,7 +74,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
       Thread.sleep(1000)
     }
 
-    "wiy" ignore {
+    "wiy" in {
 
       val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
       val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
