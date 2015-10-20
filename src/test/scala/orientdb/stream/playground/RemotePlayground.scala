@@ -10,13 +10,13 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.OSQLAsynchQuery
 import org.scalatest.{Matchers, WordSpecLike}
-import orientdb.stream.{OrientLoaderDeserializing, NonBlockingQueryBackpressuring}
+import orientdb.stream.{GotTestSettings, OrientLoaderDeserializing, NonBlockingQueryBackpressuring}
 
 // just playground
-class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
+class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers with GotTestSettings {
   def this() = this(ActorSystem("remote-instance-tests"))
   val uuid = java.util.UUID.randomUUID.toString
-  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "admin")
+  implicit val db = new ODatabaseDocumentTx(settings.remoteDb); db.open(settings.user, settings.password)
   //implicit val db = new ODatabaseDocumentTx(s"memory:test$uuid");db.create()
   implicit val materializer = ActorMaterializer()
   implicit val ec = system.dispatcher

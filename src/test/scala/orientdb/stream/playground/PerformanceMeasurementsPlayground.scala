@@ -15,10 +15,10 @@ import scala.concurrent.duration._
 import scala.reflect.ClassTag
 
 // TODO no real tests, just something
-abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers {
+abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_system) with WordSpecLike with Matchers with GotTestSettings {
   val uuid = java.util.UUID.randomUUID.toString
   //implicit val db = new ODatabaseDocumentTx(s"memory:testdb$uuid");db.create()
-  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "test")
+  implicit val db = new ODatabaseDocumentTx(settings.remoteDb); db.open(settings.user, settings.password)
   implicit val materializer = ActorMaterializer()
   implicit val loader = OrientLoaderDeserializing()
   implicit val ec = system.dispatcher

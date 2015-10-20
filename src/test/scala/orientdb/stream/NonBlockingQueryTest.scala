@@ -11,12 +11,12 @@ import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import scala.reflect.ClassTag
 
 abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_system)
-    with WordSpecLike with Matchers with BeforeAndAfterAll {
+    with WordSpecLike with Matchers with BeforeAndAfterAll with GotTestSettings {
 
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
 
   val uuid = java.util.UUID.randomUUID.toString
-  implicit val db = new ODatabaseDocumentTx(s"memory:testdb$uuid")
+  implicit val db = new ODatabaseDocumentTx(s"${settings.memoryDb}$uuid")
   implicit val ec = system.dispatcher
   implicit val loader = OrientLoaderDeserializing()
   db.create()

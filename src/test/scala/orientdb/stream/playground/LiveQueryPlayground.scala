@@ -11,16 +11,16 @@ import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.query.{OLocalLiveResultListener, OLiveResultListener, OLiveQuery}
 import com.orientechnologies.orient.core.sql.{OCommandSQL, OLiveCommandExecutorSQLFactory}
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
-import orientdb.stream.{OrientLoaderDeserializing, OverflowStrategy, LiveQuery}
+import orientdb.stream.{GotTestSettings, OrientLoaderDeserializing, OverflowStrategy, LiveQuery}
 
 class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
-    with WordSpecLike with Matchers with BeforeAndAfterAll {
+    with WordSpecLike with Matchers with BeforeAndAfterAll with GotTestSettings {
 
   def this() = this(ActorSystem("test"))
 
 
   //OLiveCommandExecutorSQLFactory.init()
-  implicit val db = new ODatabaseDocumentTx(s"remote:localhost/test"); db.open("root", "admin")
+  implicit val db = new ODatabaseDocumentTx(settings.remoteDb); db.open(settings.user, settings.password)
   //implicit val db = new ODatabaseDocumentTx(s"memory:mylittletest"); db.create()
   //db.activateOnCurrentThread()
   implicit val loader = OrientLoaderDeserializing();

@@ -4,16 +4,17 @@ import akka.actor.ActorSystem
 import akka.testkit.TestKitBase
 import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.record.impl.ODocument
+import com.typesafe.config.ConfigFactory
 import org.reactivestreams.Publisher
 import org.reactivestreams.tck.{ PublisherVerification, TestEnvironment }
 import org.scalatest.testng.TestNGSuiteLike
-import orientdb.stream.{OrientLoaderDeserializing, NonBlockingQuery}
+import orientdb.stream.{GotTestSettings, TestSettings, OrientLoaderDeserializing, NonBlockingQuery}
 
 import scala.reflect.ClassTag
 
 abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironment() {
   override def defaultTimeoutMillis(): Long = 600L
-}) with TestNGSuiteLike with TestKitBase {
+}) with TestNGSuiteLike with TestKitBase with GotTestSettings {
 
   protected val uuid = java.util.UUID.randomUUID.toString
   protected def prepareDb(): ODatabaseDocumentTx
@@ -21,7 +22,7 @@ abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironm
   implicit var db: ODatabaseDocumentTx = prepareDb() // TODO: ugly hack
   implicit val loader = OrientLoaderDeserializing()
 
-  override def maxElementsFromPublisher(): Long = Int.MaxValue/2
+  override def maxElementsFromPublisher(): Long = settings.maxElementsFromPublisher
 
   def NonBlockingQuery[A: ClassTag](query: String): NonBlockingQuery[A]
 
@@ -45,7 +46,7 @@ abstract class TckTest extends PublisherVerification[ODocument](new TestEnvironm
 
 abstract class InMemoryTckTest extends TckTest {
   def prepareDb(): ODatabaseDocumentTx = {
-    val db = new ODatabaseDocumentTx(s"memory:testdb$uuid")
+    val db = new ODatabaseDocumentTx(s"${settings.memoryDb}$uuid")
     db.create()
     val users = (for (i ← 0 to 1000) yield {
       val doc = new ODocument("Person")
@@ -68,8 +69,8 @@ abstract class RemoteTckTest extends TckTest {
   }
 
   def prepareDb(): ODatabaseDocumentTx = {
-    val db = new ODatabaseDocumentTx(s"remote:localhost/test")
-    db.open("root", "admin")
+    val db = new ODatabaseDocumentTx(settings.remoteDb)
+    db.open(settings.user, settings.password)
     db
   }
 }

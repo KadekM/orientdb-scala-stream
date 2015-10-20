@@ -6,14 +6,15 @@ import com.orientechnologies.orient.core.db.document.ODatabaseDocumentTx
 import com.orientechnologies.orient.core.query.live.OLiveQueryHook
 import com.orientechnologies.orient.core.record.impl.ODocument
 import com.orientechnologies.orient.core.sql.{ OLiveCommandExecutorSQLFactory, OCommandSQL }
+import com.typesafe.config.ConfigFactory
 import org.reactivestreams.Publisher
 import org.reactivestreams.tck.{ PublisherVerification, TestEnvironment }
 import org.scalatest.testng.TestNGSuiteLike
-import orientdb.stream.{OrientLoaderDeserializing, OverflowStrategy, LiveQueryData, LiveQuery}
+import orientdb.stream._
 
 abstract class TckTestLive extends PublisherVerification[LiveQueryData](new TestEnvironment() {
   override def defaultTimeoutMillis(): Long = 600L
-}) with TestNGSuiteLike with TestKitBase {
+}) with TestNGSuiteLike with TestKitBase with GotTestSettings {
 
   protected val uuid = java.util.UUID.randomUUID.toString
   protected def prepareDb(): ODatabaseDocumentTx
@@ -52,7 +53,7 @@ abstract class TckTestLive extends PublisherVerification[LiveQueryData](new Test
 class InMemoryTckTestLive extends TckTestLive {
   def prepareDb(): ODatabaseDocumentTx = {
     OLiveCommandExecutorSQLFactory.init()
-    val db = new ODatabaseDocumentTx(s"memory:testdb$uuid")
+    val db = new ODatabaseDocumentTx(s"${settings.memoryDb}$uuid")
     db.create()
     val doc = new ODocument("DataTable")
     doc.field("key", s"value")
@@ -72,8 +73,8 @@ class RemoteTckTestLive extends TckTestLive {
   }
 
   def prepareDb(): ODatabaseDocumentTx = {
-    val db = new ODatabaseDocumentTx(s"remote:localhost/test")
-    db.open("root", "admin")
+    val db = new ODatabaseDocumentTx(settings.remoteDb)
+    db.open(settings.user, settings.password)
     //db.command(new OCommandSQL("DELETE FROM `DataTable`")).execute()
     val doc = new ODocument("DataTable")
     doc.field("key", s"value")
