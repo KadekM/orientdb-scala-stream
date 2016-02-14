@@ -86,7 +86,7 @@ class LiveQueryPlayground(_system: ActorSystem) extends TestKit(_system)
       val query = LiveQuery(0, OverflowStrategy.DropNew)("LIVE SELECT FROM Person")
       val qe = query.execute()
       val actorSink = system.actorOf(Props(new ActorSink))
-     Source(qe).runWith(Sink(ActorSubscriber(actorSink)))
+     Source.fromPublisher(qe).runWith(Sink.fromSubscriber(ActorSubscriber(actorSink)))
      // val z =Source(qe).runForeach(println)
      // z.onFailure{case e => println(e)}
 

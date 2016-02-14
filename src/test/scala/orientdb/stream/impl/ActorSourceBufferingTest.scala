@@ -27,7 +27,7 @@ class ActorSourceBufferingTest(_system: ActorSystem) extends TestKit(_system) wi
     "be FIFO" in {
       val ref = actorWithFullBuffer(OverflowStrategy.DropHead, 1, 2, 3)
 
-      Source(ActorPublisher(ref)).runWith(TestSink.probe[Int])
+      Source.fromPublisher(ActorPublisher(ref)).runWith(TestSink.probe[Int])
         .requestNext(1)
         .requestNext(2)
         .requestNext(3)
@@ -41,7 +41,7 @@ class ActorSourceBufferingTest(_system: ActorSystem) extends TestKit(_system) wi
 
       ref ! Enqueue(9)
 
-      Source(ActorPublisher(ref)).runWith(TestSink.probe[Int])
+      Source.fromPublisher(ActorPublisher(ref)).runWith(TestSink.probe[Int])
         .requestNext(2)
         .requestNext(3)
         .requestNext(9)
@@ -55,7 +55,7 @@ class ActorSourceBufferingTest(_system: ActorSystem) extends TestKit(_system) wi
 
       ref ! Enqueue(9)
 
-      Source(ActorPublisher(ref)).runWith(TestSink.probe[Int])
+      Source.fromPublisher(ActorPublisher(ref)).runWith(TestSink.probe[Int])
         .requestNext(1)
         .requestNext(2)
         .requestNext(9)
@@ -69,7 +69,7 @@ class ActorSourceBufferingTest(_system: ActorSystem) extends TestKit(_system) wi
 
       ref ! Enqueue(9)
 
-      Source(ActorPublisher(ref)).runWith(TestSink.probe[Int])
+      Source.fromPublisher(ActorPublisher(ref)).runWith(TestSink.probe[Int])
         .requestNext(9)
         .expectNoMsg()
     }
@@ -81,7 +81,7 @@ class ActorSourceBufferingTest(_system: ActorSystem) extends TestKit(_system) wi
 
       ref ! Enqueue(9)
 
-      Source(ActorPublisher(ref)).runWith(TestSink.probe[Int])
+      Source.fromPublisher(ActorPublisher(ref)).runWith(TestSink.probe[Int])
         .requestNext(1)
         .requestNext(2)
         .requestNext(3)
@@ -95,7 +95,7 @@ class ActorSourceBufferingTest(_system: ActorSystem) extends TestKit(_system) wi
 
       ref ! Enqueue(9)
 
-      Source(ActorPublisher(ref)).runWith(TestSink.probe[Int])
+      Source.fromPublisher(ActorPublisher(ref)).runWith(TestSink.probe[Int])
         .expectSubscriptionAndError()
     }
   }

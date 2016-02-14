@@ -68,7 +68,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
       println("starting")
         //.map(_.field("name"))
 
-      Source(query.execute()).runForeach(println)
+      Source.fromPublisher(query.execute()).runForeach(println)
       //val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
       //src.request(10000)
       Thread.sleep(1000)
@@ -77,7 +77,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
     "wiy" in {
 
       val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
-      val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
+      val src = Source.fromPublisher(query.execute()).runWith(TestSink.probe[ODocument])
 
       src.request(3)
       src.expectNext()
@@ -88,7 +88,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
 
     "why5" ignore {
       val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 5")
-      val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
+      val src = Source.fromPublisher(query.execute()).runWith(TestSink.probe[ODocument])
 
       src.request(5)
       src.expectNext()
@@ -101,7 +101,7 @@ class RemotePlayground(_system: ActorSystem) extends TestKit(_system) with WordS
 
     "error" ignore {
       val query = NonBlockingQueryBackpressuring[ODocument]("SEL * FROM Person ORDER BY name LIMIT 3")
-      val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
+      val src = Source.fromPublisher(query.execute()).runWith(TestSink.probe[ODocument])
 
       src.expectSubscriptionAndError()
     }

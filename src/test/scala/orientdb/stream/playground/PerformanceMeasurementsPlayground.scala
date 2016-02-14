@@ -62,7 +62,7 @@ abstract class PerformanceMeasurements(_system: ActorSystem) extends TestKit(_sy
         val query = {
           NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name")
         }
-        val src = Source(query.execute()).map(x ⇒ 1).runFold(0)(_ + _)
+        val src = Source.fromPublisher(query.execute()).map(x ⇒ 1).runFold(0)(_ + _)
 
         val r = Await.result(src, 100.seconds)
 

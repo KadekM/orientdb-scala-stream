@@ -38,7 +38,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
     "fetch correct elements and emit onComplete" in {
       val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 3")
 
-      val src = Source(query.execute())
+      val src = Source.fromPublisher(query.execute())
         .runWith(TestSink.probe[ODocument])
 
       src.requestNext(users(0))
@@ -50,7 +50,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
     "fetch correct amount for single demand request" in {
       val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name LIMIT 10")
 
-      val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
+      val src = Source.fromPublisher(query.execute()).runWith(TestSink.probe[ODocument])
 
       src.request(10)
       for (i <- 1 to 10) src.expectNext()
@@ -60,7 +60,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
     "not overflow and sends all elements in" ignore {
       val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER BY name")
 
-      val src = Source(query.execute()).runWith(TestSink.probe[ODocument])
+      val src = Source.fromPublisher(query.execute()).runWith(TestSink.probe[ODocument])
 
       src.request(Long.MaxValue)
       src.request(10000L)
@@ -72,7 +72,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
     "complete instantly for empty collection" in {
       val query = NonBlockingQuery[ODocument]("SELECT * FROM Person WHERE name='foobar'")
 
-      val src = Source(query.execute())
+      val src = Source.fromPublisher(query.execute())
         .runWith(TestSink.probe[ODocument])
 
       src.expectSubscriptionAndComplete()
@@ -81,7 +81,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
     "emit error when query fails" in {
       val query = NonBlockingQuery[ODocument]("SELC * FROM Person")
 
-      val src = Source(query.execute())
+      val src = Source.fromPublisher(query.execute())
         .runWith(TestSink.probe[ODocument])
 
       src.expectSubscriptionAndError()
@@ -90,7 +90,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
     "be cancellable" in {
       val query = NonBlockingQuery[ODocument]("SELECT * FROM Person ORDER by name")
 
-      val src = Source(query.execute())
+      val src = Source.fromPublisher(query.execute())
         .runWith(TestSink.probe[ODocument])
       src.requestNext(users(0))
       src.requestNext(users(1))
@@ -103,7 +103,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
     "positional params work" in {
       val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person WHERE name = ?")
 
-      val src = Source(query.executePositional("Luke7")).runWith(TestSink.probe[ODocument])
+      val src = Source.fromPublisher(query.executePositional("Luke7")).runWith(TestSink.probe[ODocument])
       src.request(1)
       src.expectNext()
       src.expectComplete()
@@ -116,7 +116,7 @@ abstract class NonBlockingQueryTest(_system: ActorSystem) extends TestKit(_syste
       //val params = Map("nam" -> "Luke7").asJava
 
       val params = Map("nam" -> "Luke7")
-      val src = Source(query.executeNamed(params)).runWith(TestSink.probe[ODocument])
+      val src = Source.fromPublisher(query.executeNamed(params)).runWith(TestSink.probe[ODocument])
       src.request(1)
       src.expectNext()
       src.expectComplete()
