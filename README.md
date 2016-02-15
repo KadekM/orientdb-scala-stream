@@ -38,7 +38,7 @@ implicit val loader = OrientLoaderDeserializing()
 
 val query = LiveQuery(bufferSize = 1000, OverflowStrategy.DropHead)
                      ("LIVE SELECT FROM Person")
-Source(query.execute())
+Source.fromPublisher(query.execute())
     .collect{ case Created(data) => data }
     .takeWhile(_.field("name").toString().contains("Pet"))
     .runForeach(println)
@@ -69,7 +69,7 @@ implicit val db: ODatabaseDocumentTx = ???
 implicit val loader = OrientLoaderDeserializing()
 
 val query = NonBlockingQueryBackpressuring[ODocument]("SELECT * FROM Person")
-val src = Source(query.execute())
+val src = Source.fromPublisher(query.execute())
           .runForeach(println)
 ```
 This will backpressure the databse - if there is no demand from downstream, database won't perform the fetch - thus non blocking queries have no need for internal buffer.Cancelling subscription will stop database from fetching next rows.
@@ -84,7 +84,7 @@ val query = NonBlockingQueryBuffering[ODocument]
         (bufferSize = 1000, OverflowStrategy.DropHead)
         ("SELECT * FROM Person WHERE name = :lookingFor")
         
-val src = Source(query.executeNamed("lookingFor" -> "Peter"))
+val src = Source.fromPublisher(query.executeNamed("lookingFor" -> "Peter"))
           .map(myMethod)
           .filter(myFilter)
           .runFold(...) 
@@ -128,7 +128,7 @@ You can implement your `OrientLoader`.
 **The way this works may change in future.**
 
 ## FAQ
-Why does `Source(query.execute()).runForeach(println)` produce inconstitent strings ? Sometimes with Person prefix, sometimes without ?
+Why does `Source.fromPublisher(query.execute()).runForeach(println)` produce inconstitent strings ? Sometimes with Person prefix, sometimes without ?
 * Depends on which thread gets to run the execution. It can actually be the thread that has database set in ThreadLocals, which then makes `ODocument.toString()` to fetch also schema. Please read _implicits loader part_.
 
 ## Info
