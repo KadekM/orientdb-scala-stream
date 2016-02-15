@@ -6,6 +6,16 @@ _If you are missing functionality, or something doesn't work, please either rais
 
 Library that allows you to execute `non blocking queries` and `live queries` on database, and treat results as reactive stream.
 
+__If your OrientDB version < 2.2 you need to enable capabilities it in server config! Check OrientDB docs__
+```
+<handler class="com.orientechnologies.orient.server.plugin.livequery.OLiveQueryPlugin">
+	<parameters>
+        	<parameter value="true" name="enabled"/>
+        </parameters>
+</handler>
+</handlers>
+```
+
 Supported
 
 - [Live queries](#live-queries) (experimental - [OrientDB documentation](http://orientdb.com/docs/last/Live-Query.html#whats-next))
