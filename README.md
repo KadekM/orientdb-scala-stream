@@ -13,7 +13,6 @@ __If your OrientDB version < 2.2 you need to enable capabilities it in server co
         	<parameter value="true" name="enabled"/>
         </parameters>
 </handler>
-</handlers>
 ```
 
 Supported
