@@ -1,4 +1,4 @@
-_Experimental library, let's see how it works._
+_This library serves as Proof of Concept! It is not battle (production) tested._
 
 _If you are missing functionality, or something doesn't work, please either raise issue or make a PR. [See info](#info) at bottom._
 
